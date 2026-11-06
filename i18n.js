@@ -1,0 +1,129 @@
+/* HYTEK — English / Vietnamese switch.
+   English lives in index.html (the source of truth). Vietnamese lives here, keyed by data-i18n.
+   Classic script (inline dictionary, no fetch) so it also works from file://.
+   Scripts read window.HY_T(key, englishFallback) and listen for the 'hy:lang' event to redraw their own labels. */
+(function(){
+'use strict';
+const VI={
+  'meta.title':'HYTEK | Kỹ thuật phần mềm thiết bị bán dẫn',
+  'meta.desc':'HYTEK SOLUTIONS VN phát triển phần mềm cho thiết bị bán dẫn và thiết bị màng mỏng tiên tiến: điều khiển thiết bị, chuyển động, hệ thống quy trình, truyền thông công nghiệp và tự động hóa GEM/SECS.',
+  'ui.menu':'Menu','ui.close':'Đóng','ui.sim':'MÔ PHỎNG',
+  'nav.about':'Giới thiệu','nav.equipment':'Thiết bị','nav.services':'Dịch vụ','nav.protocols':'Giao thức','nav.gem':'GEM / SECS','nav.sim':'Mô phỏng','nav.contact':'Liên hệ',
+
+  'hero.kick':'HƠN 20 NĂM KINH NGHIỆM PHẦN MỀM THIẾT BỊ',
+  'hero.h1':'<span class="line"><span class="o">Kỹ thuật</span></span><span class="line"><span class="o">phần mềm</span></span><span class="line"><span>thiết bị</span></span><span class="line"><span>bán dẫn</span></span>',
+  'hero.lead':'Phát triển phần mềm cho các hệ thống màng mỏng tiên tiến — từ xử lý wafer và loadlock đến buồng công nghệ, điều khiển thiết bị, truyền thông công nghiệp và tự động hóa nhà máy GEM/SECS.',
+  'hero.cta1':'Khám phá kinh nghiệm của chúng tôi','hero.cta2':'Trao đổi với đội ngũ kỹ sư',
+  'hero.m1':'Xây dựng tại Việt Nam','hero.m2':'Kinh nghiệm kỹ thuật từ năm 2003',
+  'hero.cue':'Cuộn để tháo rời buồng xử lý',
+  'st.1l':'Kinh nghiệm kỹ thuật từ năm','st.2l':'Kinh nghiệm kiến trúc thiết bị','st.2v':'Đa buồng',
+  'st.3l':'Kinh nghiệm truyền thông công nghiệp','st.3v':'10+ giao thức','st.4l':'Tích hợp tự động hóa nhà máy',
+
+  'svc.label':'KỸ THUẬT PHẦN MỀM',
+  'svc.h2':'Lớp phần mềm giúp thiết bị vận hành.',
+  'svc.p':'Chúng tôi làm việc như một phần mở rộng của đội kỹ thuật thiết bị, từ tích hợp phần cứng cấp thấp đến điều khiển quy trình và tự động hóa.',
+  's1.n':'Điều khiển thiết bị','s1.d':'Quản lý trạng thái, trình tự vận hành, chế độ thủ công/tự động, cấu hình, chẩn đoán, cảnh báo, interlock và khôi phục.',
+  's2.n':'Recipe &amp; quy trình','s2.d':'Tạo và thực thi recipe, quản lý thông số, trình tự quy trình, giám sát, lịch sử chạy và ghi dữ liệu.',
+  's3.n':'Chuyển động &amp; xử lý wafer','s3.d':'Chuyển động đa trục, xử lý wafer, điều khiển robot, định vị, homing, xoay, nâng hạ và khôi phục lỗi.',
+  's4.n':'Phần cứng &amp; I/O','s4.d':'PLC, bộ điều khiển chuyển động, I/O số/tương tự, cảm biến, cơ cấu chấp hành, nguồn điện, MFC, chiller và linh kiện chân không.',
+  's5.n':'Chân không &amp; quy trình','s5.d':'Bơm cryo và turbo, van, điều khiển áp suất, cấp khí, nguồn RF/DC, hệ thống plasma và phần cứng công nghệ.',
+  's6.n':'HMI / GUI','s6.d':'HMI thiết bị, cấu hình, trình soạn recipe, giám sát quy trình, quản lý cảnh báo, bảo trì và chẩn đoán.',
+  'part.src':'Nguồn plasma · nguồn RF / DC','part.ch':'Buồng xử lý','part.chuck':'Mâm wafer · nâng · xoay',
+  'part.valve':'Van slit · interlock','part.mfc':'MFC · cấp khí','part.pump':'Bơm turbo / cryo',
+
+  'about.label':'VỀ HYTEK',
+  'about.h2':'Chúng tôi hiểu thiết bị đằng sau phần mềm.',
+  'about.p1':'HYTEK SOLUTIONS VN COMPANY LIMITED là công ty kỹ thuật phần mềm tại Việt Nam, chuyên về thiết bị bán dẫn và thiết bị màng mỏng tiên tiến.',
+  'about.p2':'Kinh nghiệm kỹ thuật của chúng tôi trong lĩnh vực này bắt đầu từ năm 2003. Chúng tôi đã phát triển và hỗ trợ phần mềm cho buồng công nghệ, hệ thống xử lý wafer, loadlock và các nền tảng đa buồng tích hợp.',
+  'about.p3':'Công việc của chúng tôi bao gồm tích hợp phần cứng, chuyển động, chân không, điều khiển quy trình, recipe, HMI, cảnh báo và interlock, ghi dữ liệu, truyền thông công nghiệp và tự động hóa GEM/SECS.',
+  'about.q':'“Phần mềm thiết bị bán dẫn đòi hỏi nhiều hơn kỹ năng phát triển phần mềm thông thường — kỹ sư cần hiểu phần mềm tương tác thế nào với thiết bị, quy trình và phần cứng thật.”',
+
+  'eq.label':'KINH NGHIỆM THIẾT BỊ',
+  'eq.h2':'Từ buồng đơn lẻ đến nền tảng đa buồng.',
+  'eq.p':'Kinh nghiệm của chúng tôi bao trùm toàn bộ tầng điều khiển thiết bị — từ xử lý wafer và loadlock đến nhiều mô-đun công nghệ và tự động hóa nhà máy.',
+  'tag.multi':'ĐA BUỒNG','tag.handling':'XỬ LÝ WAFER','tag.onep':'HỆ THỐNG TRỌN GÓI',
+  'p1.n':'Nền tảng cluster công suất cao','p1.s':'2 loadlock, 4–6 buồng công nghệ, tích hợp xử lý wafer và điều khiển đa quy trình.',
+  'p2.n':'Nền tảng cluster công suất trung bình','p2.s':'2 loadlock, 3 buồng công nghệ, tích hợp xử lý wafer và điều khiển quy trình.',
+  'p3.n':'Hệ thống PVD tích hợp 3 buồng','p3.s':'1 loadlock, 3 buồng công nghệ, tích hợp điều khiển quy trình PVD.',
+  'p4.n':'Bộ xử lý wafer một loadlock','p4.s':'Tích hợp IBE / IBD.',
+  'p5.n':'Bộ nạp wafer tự động nhiều cassette','p5.s':'Tích hợp IBE / IBD.',
+  'p6.n':'Hệ thống trọn gói độc lập','p6.s':'RIE &amp; PVD tích hợp.',
+  'eq.hint':'Kéo để xoay','eq.chips':'Tên gọi đầy đủ của các công nghệ',
+  'c1':'Khắc chùm ion (IBE)','c2':'Lắng đọng chùm ion (IBD)','c3':'Lắng đọng hơi vật lý (PVD)','c4':'PVD nâng cao',
+  'c5':'PVD nhiều bia','c6':'PVD tốc độ cao (HRPVD)','c7':'Khắc ion phản ứng (RIE)','c8':'Hệ thống PVD inline',
+
+  'pr.label':'TRUYỀN THÔNG CÔNG NGHIỆP',
+  'pr.h2':'Kết nối phần mềm với thiết bị thật.',
+  'pr.p':'Kỹ sư HYTEK làm việc với truyền thông cấp thiết bị, giao diện công nghiệp và các giao thức tự động hóa nhà máy.',
+  'pr.ih':'Tích hợp phần cứng &amp; giao thức',
+  'pr.ip':'Kinh nghiệm truyền thông với thiết bị, bộ điều khiển, phần cứng công nghệ và hệ thống host của nhà máy.',
+  'pr.in':'Từ truyền thông thiết bị đến tự động hóa nhà máy.',
+  'pr.t1':'THIẾT BỊ &amp; NỐI TIẾP','pr.t2':'MẠNG','pr.t3':'CÔNG NGHIỆP','pr.t5':'TỰ ĐỘNG HÓA BÁN DẪN',
+  'pr.d1':'Solenoid, RSTi, MFC và các thiết bị khác; SerialPort và truyền thông nối tiếp trực tiếp.',
+  'pr.d2':'Truyền thông TCP/IP socket và các giao thức bản tin ASCII/raw tùy biến qua TCP và COM.',
+  'pr.d3':'Trao đổi dữ liệu công nghiệp và tích hợp thiết bị qua môi trường OPC DA và Kepware.',
+  'pr.d4':'Modbus TCP, Modbus RTU qua COM, Modbus RTU qua TCP và Modbus ASCII qua TCP.',
+  'pr.d5':'Truyền thông thiết bị và tích hợp tự động hóa nhà máy cho môi trường sản xuất bán dẫn.',
+
+  'gem.label':'TỰ ĐỘNG HÓA NHÀ MÁY',
+  'gem.h2':'Tích hợp GEM / SECS',
+  'gem.p':'Thiết bị bán dẫn hiện đại phải giao tiếp tin cậy với hệ thống host của nhà máy. HYTEK phát triển và tích hợp chức năng GEM/SECS vào phần mềm thiết bị.',
+  'gem.l1':'Truyền thông SECS và HSMS','gem.l2':'Mô hình thiết bị và biến trạng thái','gem.l3':'Cảnh báo và sự kiện thu thập',
+  'gem.l4':'Lệnh điều khiển từ xa','gem.l5':'Quản lý recipe','gem.l6':'Thu thập dữ liệu thiết bị và quy trình',
+  'gem.pause':'Tạm dừng trao đổi','gem.play':'Phát trao đổi',
+
+  'sim.label':'MÔ PHỎNG THIẾT BỊ',
+  'sim.h2':'Bộ mô phỏng thiết bị cho phát triển, kiểm thử và đào tạo.',
+  'sim.p':'Song song với phần mềm thiết bị, HYTEK xây dựng các bộ mô phỏng thay thế phần cứng thật — buồng công nghệ, xử lý wafer, thiết bị ngoại vi và host của nhà máy — để phần mềm được phát triển, kiểm thử và trình diễn mà không phải chờ thiết bị.',
+  'sim.c1h':'Thiết bị ảo','sim.c1p':'Buồng công nghệ, loadlock, robot và phần cứng quy trình được mô hình hóa với thời gian, trạng thái và phản hồi sát thực tế.',
+  'sim.c2h':'Mô phỏng thiết bị ngoại vi','sim.c2p':'MFC, nguồn RF/DC, bơm, van và bộ điều khiển phản hồi qua đúng các giao thức như thiết bị thật.',
+  'sim.c3h':'Mô phỏng I/O và interlock','sim.c3p':'Tín hiệu số và tương tự, cảm biến và interlock, để kiểm tra trình tự và logic an toàn ngay tại bàn làm việc.',
+  'sim.c4h':'Giả lập lỗi','sim.c4p':'Tạo cảnh báo, timeout và hỏng hóc phần cứng theo yêu cầu, để kiểm thử xử lý lỗi và khôi phục trước khi chúng xảy ra trên máy.',
+  'sim.c5h':'Mô phỏng host','sim.c5p':'Các kịch bản host GEM/SECS để kiểm thử tích hợp nhà máy mà không cần MES sản xuất.',
+  'sim.c6h':'Đào tạo và trình diễn','sim.c6p':'Người vận hành và khách hàng có thể chạy toàn bộ phần mềm thiết bị mà không cần phòng sạch.',
+  'sw.sw':'Phần mềm thiết bị','sw.if':'Cùng giao diện','sw.sim':'Bộ mô phỏng HYTEK','sw.real':'Thiết bị thật',
+  'sw.s1':'Buồng ảo · robot','sw.s2':'Mô hình thiết bị & I/O','sw.s3':'Giả lập lỗi',
+  'sw.r1':'Buồng · robot','sw.r2':'Thiết bị · PLC · I/O','sw.r3':'Host nhà máy',
+
+  'pa.label':'HỢP TÁC KỸ THUẬT',
+  'pa.h2':'Đội ngũ kỹ sư của bạn tại Việt Nam.',
+  'pa.p':'HYTEK hỗ trợ các nhà sản xuất thiết bị và công ty công nghệ cần năng lực kỹ thuật phần mềm giàu kinh nghiệm cho thiết bị bán dẫn và màng mỏng.',
+  'pa.m1h':'Phát triển thiết bị mới','pa.m1p':'Kỹ thuật phần mềm cho các nền tảng thiết bị mới, từ giai đoạn phát triển ban đầu đến sản xuất.',
+  'pa.m2h':'Hỗ trợ thiết bị hiện có','pa.m2p':'Bảo trì, xử lý sự cố, cải tiến và hỗ trợ dài hạn cho các hệ thống đã triển khai.',
+  'pa.m3h':'Đội ngũ kỹ sư chuyên trách','pa.m3p':'Một đội ngũ tập trung tại Việt Nam, làm việc trong kiến trúc và quy trình phát triển của bạn.',
+  'pa.m4h':'Phần mềm legacy','pa.m4p':'Tái cấu trúc, hiện đại hóa và phát triển tính năng cho các ứng dụng thiết bị hiện có.',
+  'lp.n1':'Đội kỹ thuật của bạn','lp.n1s':'Kiến trúc · quy trình','lp.n2':'HYTEK · TP. Hồ Chí Minh','lp.n2s':'Đội phần mềm thiết bị',
+  'lp.n3':'Thiết bị của bạn','lp.n3s':'Lab · fab · hiện trường',
+  'lp.f1':'Kiến trúc & quy trình của bạn','lp.f2':'Bản build phần mềm','lp.f3':'Từ phát triển đến sản xuất','lp.f4':'Hỗ trợ & xử lý sự cố',
+
+  'ct.label':'HÃY TRAO ĐỔI',
+  'ct.h2':'Cùng xây dựng phần mềm thiết bị tốt hơn.',
+  'ct.p':'Hãy cho chúng tôi biết về thiết bị, kiến trúc phần mềm hoặc nhu cầu kỹ thuật của bạn.',
+  'ct.t1':'Thiết bị bán dẫn','ct.t2':'Hệ thống màng mỏng','ct.t3':'Truyền thông công nghiệp',
+  'ct.btn':'Liên hệ đội ngũ kỹ sư',
+  'brand.tag':'Phần mềm kỹ thuật cho hệ thống màng mỏng tiên tiến'
+};
+const KEY='hytek-lang',en={};
+let lang='en';
+const qp=new URLSearchParams(location.search).get('lang');
+try{const s=(qp==='vi'||qp==='en')?qp:localStorage.getItem(KEY);if(s==='vi'||s==='en')lang=s;else if((navigator.language||'').toLowerCase().startsWith('vi'))lang='vi'}catch(e){}
+window.HY_LANG=lang;
+window.HY_T=(k,fallback)=>(window.HY_LANG==='vi'&&VI[k]!=null)?VI[k].replace(/&amp;/g,'&'):fallback;
+const desc=document.querySelector('meta[name="description"]');
+en['meta.title']=document.title;en['meta.desc']=desc?desc.content:'';
+function apply(l,announce){
+  window.HY_LANG=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n;if(!(k in en))en[k]=el.innerHTML;
+    const v=(l==='vi'&&VI[k]!=null)?VI[k]:en[k];if(el.innerHTML!==v)el.innerHTML=v;
+  });
+  document.documentElement.lang=l;
+  document.title=l==='vi'?VI['meta.title']:en['meta.title'];
+  if(desc)desc.content=l==='vi'?VI['meta.desc']:en['meta.desc'];
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
+  try{localStorage.setItem(KEY,l)}catch(e){}
+  if(announce)dispatchEvent(new CustomEvent('hy:lang',{detail:l}));
+}
+apply(lang,false);
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.lang!==window.HY_LANG)apply(b.dataset.lang,true)}));
+})();

@@ -1,0 +1,321 @@
+/* HYTEK — equipment platform simulations (Equipment section).
+   One Three.js viewer; each platform button builds its own configuration and runs a wafer-transfer sequence.
+   All geometry is simulated (no client photographs or CAD). A button may later carry
+   data-glb="models/x.glb" or data-video="video/x.mp4" with the team's own 3D work; that file then replaces the simulation.
+   Classic script: Three.js comes in with dynamic import() through the importmap, so file:// works. */
+(function(){
+'use strict';
+const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
+const RM=document.documentElement.classList.contains('rm');
+const view=document.getElementById('eqView');if(!view)return;
+const btns=[...document.querySelectorAll('.pl')];
+const nameEl=document.getElementById('eqName'),stateEl=document.getElementById('eqState'),glHost=document.getElementById('eqGl');
+const NS='http://www.w3.org/2000/svg';
+const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+
+/* ---- mini top-view diagram on each button ---- */
+btns.forEach(b=>{
+  const svg=b.querySelector('.mini'),cfg=b.dataset.cfg,cx=56,cy=32;
+  if(cfg==='sps'){mk('rect',{x:18,y:14,width:22,height:38},svg);mk('circle',{class:'pm',cx:70,cy,r:20},svg);mk('circle',{cx:70,cy,r:11},svg);return}
+  if(cfg==='sll'){mk('rect',{x:14,y:22,width:22,height:20,fill:'#09131f'},svg);mk('rect',{x:40,y:24,width:14,height:16},svg);mk('circle',{class:'pm',cx:80,cy,r:20},svg);mk('circle',{cx:80,cy,r:9},svg);return}
+  if(cfg==='mca'){[18,40,62].forEach(x=>mk('rect',{x,y:46,width:16,height:12,fill:'#09131f'},svg));mk('line',{x1:14,y1:38,x2:84,y2:38},svg);mk('rect',{x:34,y:14,width:16,height:16},svg);mk('circle',{class:'pm',cx:80,cy:22,r:14},svg);return}
+  const ll=+b.dataset.ll,pm=+b.dataset.pm,n=ll+pm,sides=n<=4?4:n<=6?6:8,R=11;
+  const vo=cfg==='pvd'?.5:0,pts=[];for(let k=0;k<sides;k++){const a=Math.PI/2+(k+vo)*2*Math.PI/sides;pts.push((cx+R*Math.cos(a)).toFixed(1)+','+(cy+R*Math.sin(a)).toFixed(1))}
+  mk('polygon',{points:pts.join(' ')},svg);
+  layoutCluster(b.dataset.cfg).forEach(s=>{const x=cx+23*Math.cos(s.a),y=cy+20*Math.sin(s.a);
+    if(s.kind==='ll')mk('rect',{x:x-5,y:y-5,width:10,height:10,fill:'#09131f'},svg);else mk('circle',{class:'pm',cx:x,cy:y,r:6.5,'stroke-dasharray':s.opt?'2 2':null},svg)});
+});
+
+/* station layout for cluster tools: angle a (x=cos a, z=sin a), kind, name */
+function layoutCluster(cfg){
+  const out=[],face=(n,i)=>Math.PI/2+i*2*Math.PI/n; // face 0 points to the front (+z)
+  if(cfg==='hc'){const n=8;out.push({a:face(n,-.5)+0,kind:'ll',name:'LL-A'},{a:face(n,.5),kind:'ll',name:'LL-B'});
+    for(let i=1;i<=6;i++)out.push({a:face(n,.5+i),kind:'pm',name:'PM'+i,opt:i>4});}
+  else if(cfg==='mc'){const n=6;out.push({a:face(n,-.5),kind:'ll',name:'LL-A'},{a:face(n,.5),kind:'ll',name:'LL-B'});
+    [1.5,2.5,3.5].forEach((f,i)=>out.push({a:face(n,f),kind:'pm',name:'PM'+(i+1)}));}
+  else if(cfg==='pvd'){const n=4;out.push({a:face(n,0),kind:'ll',name:'LL'});[1,2,3].forEach((f,i)=>out.push({a:face(n,f),kind:'pm',name:'PM'+(i+1)}));}
+  else if(cfg==='sll'){out.push({a:Math.PI,kind:'ll',name:'LL'},{a:0,kind:'ib',name:'IBE / IBD'});}
+  return out;
+}
+
+/* ---- selection ---- */
+let current=btns.find(b=>b.getAttribute('aria-pressed')==='true')||btns[0],api=null;
+const setName=()=>{nameEl.textContent=current.querySelector('b').textContent};
+setName();addEventListener('hy:lang',setName);
+btns.forEach(b=>b.addEventListener('click',()=>{
+  current=b;btns.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));setName();
+  if(api)api.load(b);
+  if(innerWidth<=900){const r=view.getBoundingClientRect();if(r.top<64||r.bottom>innerHeight)view.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'})}
+}));
+
+/* pause control, same as the other simulations */
+let paused=false;
+if(!RM){const pb=document.createElement('button');pb.type='button';pb.className='simpause';
+  const set=()=>{pb.setAttribute('aria-label',paused?'Play animation':'Pause animation');pb.innerHTML=`<svg class="i" aria-hidden="true"><use href="#${paused?'play':'pause'}"/></svg>`};
+  set();pb.onclick=()=>{paused=!paused;set()};view.appendChild(pb)}
+
+let started=false;
+function start(){if(started)return;started=true;removeEventListener('scroll',near);init().catch(e=>{console.warn('HYTEK: platform viewer unavailable',e);view.classList.add('fail');stateEl.textContent=''})}
+function near(){const b=view.getBoundingClientRect();if(b.top<innerHeight+300&&b.bottom>-300)start()}
+new IntersectionObserver(es=>{if(es[0].isIntersecting)start()},{rootMargin:'300px'}).observe(view);
+addEventListener('scroll',near,{passive:true});near();
+
+async function init(){
+  const THREE=await import('three');
+  const {RoomEnvironment}=await import('three/addons/environments/RoomEnvironment.js');
+  const {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+  const W=()=>view.clientWidth,H=()=>view.clientHeight;
+  const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(2,devicePixelRatio));r.setSize(W(),H());glHost.appendChild(r.domElement);
+  r.toneMapping=THREE.ACESFilmicToneMapping;
+  const scene=new THREE.Scene();scene.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
+  scene.add(new THREE.HemisphereLight(0xffffff,0x8fa0b0,1.5));
+  const sun=new THREE.DirectionalLight(0xffffff,2.0);sun.position.set(5,9,6);scene.add(sun);
+  const cam=new THREE.PerspectiveCamera(30,W()/H(),.1,200);
+  const controls=new OrbitControls(cam,r.domElement);
+  controls.enableZoom=false;controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.08;
+  controls.minPolarAngle=.35;controls.maxPolarAngle=1.3;controls.autoRotate=!RM;controls.autoRotateSpeed=.55;
+  let resumeT=0;controls.addEventListener('start',()=>{controls.autoRotate=false;clearTimeout(resumeT)});
+  controls.addEventListener('end',()=>{if(!RM)resumeT=setTimeout(()=>controls.autoRotate=true,4000)});
+
+  const C={ink:0x09131f,blue:0x0b6ac7};
+  const M={
+    steel:new THREE.MeshStandardMaterial({color:0xd9dde1,metalness:.75,roughness:.3,side:THREE.DoubleSide}),
+    steelD:new THREE.MeshStandardMaterial({color:0x9aa1a8,metalness:.7,roughness:.4}),
+    dark:new THREE.MeshStandardMaterial({color:0x2a3138,metalness:.4,roughness:.55}),
+    black:new THREE.MeshStandardMaterial({color:0x1a1b1d,metalness:.2,roughness:.6}),
+    blue:new THREE.MeshStandardMaterial({color:C.blue,metalness:.2,roughness:.45}),
+    frame:new THREE.MeshStandardMaterial({color:0xc4ccd3,metalness:.3,roughness:.7}),
+    copper:new THREE.MeshStandardMaterial({color:0xd08a4c,metalness:.8,roughness:.3}),
+    glass:new THREE.MeshPhysicalMaterial({color:0xcfe3f5,metalness:0,roughness:.05,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}),
+    ghost:new THREE.MeshStandardMaterial({color:0xd9dde1,metalness:.5,roughness:.4,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}),
+    wafer:new THREE.MeshPhysicalMaterial({color:0x7f97c9,metalness:.55,roughness:.12,iridescence:1,iridescenceIOR:1.7,clearcoat:1}),
+    arm:new THREE.MeshStandardMaterial({color:0xe8ecef,metalness:.5,roughness:.3}),
+  };
+  const mesh=(g,m,p,rt)=>{const o=new THREE.Mesh(g,m);if(p)o.position.set(...p);if(rt)o.rotation.set(...rt);return o};
+  const inkLine=()=>new THREE.LineBasicMaterial({color:C.ink,transparent:true,opacity:.22});
+  function ink(group,mat){const m=mat||inkLine();group.traverse(o=>{if(o.isMesh&&!o.userData.noEdge)o.add(new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry,28),m))});return m}
+  const waferGeo=new THREE.CylinderGeometry(.3,.3,.015,48);
+
+  /* ---------- builders ---------- */
+  function processChamber(opt,hinged){ // vertical PVD/RIE-style process module, cutaway facing +x (outward)
+    const g=new THREE.Group(),body=opt?M.ghost:M.steel;
+    g.add(mesh(new THREE.BoxGeometry(1.1,.3,1.1),M.frame,[0,.15,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.62,.62,.62,56,1,true,Math.PI*.8,Math.PI*1.4),body,[0,.62,0]));
+    [.31,.93].forEach(y=>g.add(mesh(new THREE.TorusGeometry(.62,.03,8,56),M.steelD,[0,y,0],[Math.PI/2,0,0])));
+    if(!hinged){g.add(mesh(new THREE.CylinderGeometry(.66,.66,.08,56),opt?M.ghost:M.steel,[0,.97,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.28,.28,.22,32),M.steelD,[0,1.12,0]));
+    g.add(mesh(new THREE.TorusGeometry(.33,.03,8,40),M.copper,[0,1.06,0],[Math.PI/2,0,0]));}
+    g.add(mesh(new THREE.CylinderGeometry(.42,.45,.1,48),M.steelD,[0,.42,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.22,.22,.25,32),M.dark,[0,.12,.62]));
+    const plasma=mesh(new THREE.CylinderGeometry(.5,.42,.4,40,1,true),new THREE.MeshBasicMaterial({color:0x4fa8ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),[0,.68,0]);
+    plasma.userData.noEdge=true;g.add(plasma);
+    return {g,wafer:new THREE.Vector3(0,.48,0),glow:plasma.material,top:1.3};
+  }
+  function ionBeamChamber(){ // horizontal IBE/IBD chamber, ion source on the far end, open on top
+    const g=new THREE.Group();
+    g.add(mesh(new THREE.BoxGeometry(1.5,.3,1.0),M.frame,[.15,.15,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.55,.55,1.2,56,1,true,Math.PI*.65,Math.PI*1.7),M.steel,[.15,.82,0],[0,0,Math.PI/2]));
+    [-.45,.75].forEach(x=>g.add(mesh(new THREE.TorusGeometry(.55,.03,8,56),M.steelD,[x,.82,0],[0,Math.PI/2,0])));
+    g.add(mesh(new THREE.CylinderGeometry(.34,.34,.38,40),M.steelD,[.95,.82,0],[0,0,Math.PI/2]));
+    g.add(mesh(new THREE.CylinderGeometry(.36,.36,.06,40),M.blue,[.8,.82,0],[0,0,Math.PI/2]));
+    g.add(mesh(new THREE.CylinderGeometry(.36,.36,.1,40),M.black,[1.16,.82,0],[0,0,Math.PI/2]));
+    g.add(mesh(new THREE.BoxGeometry(.08,.5,.5),M.steelD,[-.12,.72,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.2,.2,.3,32),M.dark,[.15,.15,.55]));
+    const beam=mesh(new THREE.CylinderGeometry(.12,.28,.85,32,1,true),new THREE.MeshBasicMaterial({color:0x4fa8ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),[.35,.82,0],[0,0,Math.PI/2]);
+    beam.userData.noEdge=true;g.add(beam);
+    return {g,wafer:new THREE.Vector3(-.08,.74,0),glow:beam.material,top:1.5,vertWafer:true};
+  }
+  function loadlock(){
+    const g=new THREE.Group();
+    g.add(mesh(new THREE.BoxGeometry(.75,.3,.75),M.frame,[0,.15,0]));
+    g.add(mesh(new THREE.BoxGeometry(.7,.5,.66),M.steel,[0,.55,0]));
+    g.add(mesh(new THREE.BoxGeometry(.06,.36,.5),M.black,[.37,.55,0]));
+    const lid=mesh(new THREE.BoxGeometry(.6,.02,.56),M.glass,[0,.81,0]);lid.userData.noEdge=true;g.add(lid);
+    for(let i=0;i<4;i++)g.add(mesh(new THREE.BoxGeometry(.5,.01,.04),M.steelD,[0,.36+i*.05,-.24]));
+    return {g,wafer:new THREE.Vector3(0,.48,0),glow:null,top:.95};
+  }
+  function cassette(){
+    const g=new THREE.Group();
+    g.add(mesh(new THREE.BoxGeometry(.7,.06,.7),M.dark,[0,.42,0]));
+    [[-.3,-.3],[.3,-.3],[-.3,.3],[.3,.3]].forEach(([x,z])=>g.add(mesh(new THREE.BoxGeometry(.04,.5,.04),M.blue,[x,.7,z])));
+    for(let i=0;i<5;i++){const w=mesh(waferGeo,M.wafer,[0,.5+i*.08,0]);w.userData.noEdge=true;g.add(w)}
+    g.add(mesh(new THREE.BoxGeometry(.8,.42,.8),M.frame,[0,.21,0]));
+    return {g,wafer:new THREE.Vector3(0,.92,0),glow:null,top:1.1};
+  }
+  function transferChamber(n,apothem,vOff){
+    const R=apothem/Math.cos(Math.PI/n),shape=new THREE.Shape();
+    for(let k=0;k<=n;k++){const a=Math.PI/2+(k+vOff)*2*Math.PI/n,x=R*Math.cos(a),z=R*Math.sin(a);k?shape.lineTo(x,-z):shape.moveTo(x,-z)}
+    const geo=new THREE.ExtrudeGeometry(shape,{depth:.32,bevelEnabled:false});geo.rotateX(-Math.PI/2);
+    const g=new THREE.Group();g.add(mesh(geo,M.steelD,[0,.3,0]));
+    const lidGeo=new THREE.ExtrudeGeometry(shape,{depth:.02,bevelEnabled:false});lidGeo.rotateX(-Math.PI/2);
+    const lid=mesh(lidGeo,M.glass,[0,.64,0]);lid.userData.noEdge=true;g.add(lid);
+    const base=new THREE.ExtrudeGeometry(shape,{depth:.3,bevelEnabled:false});base.rotateX(-Math.PI/2);g.add(mesh(base,M.frame,[0,0,0]));
+    return g;
+  }
+  function robot(L){
+    const g=new THREE.Group(),y=.5;
+    g.add(mesh(new THREE.CylinderGeometry(.16,.18,.2,32),M.dark,[0,y-.1,0]));
+    const box=()=>{const m=mesh(new THREE.BoxGeometry(1,.05,.1),M.arm);return m};
+    const l1=box(),l2=box(),eff=mesh(new THREE.BoxGeometry(.34,.02,.16),M.blue);
+    [l1,l2,eff].forEach(m=>{m.position.y=y;g.add(m)});l2.position.y=y+.05;eff.position.y=y+.05;
+    function place(m,a,b){const dx=b.x-a.x,dz=b.z-a.z;m.position.x=(a.x+b.x)/2;m.position.z=(a.z+b.z)/2;m.rotation.y=-Math.atan2(dz,dx);m.scale.x=Math.hypot(dx,dz)}
+    const tip=new THREE.Object3D();tip.position.y=y+.07;g.add(tip);
+    function pose(reach){const rr=Math.min(reach,2*L-.001),b=Math.acos(rr/(2*L));
+      const E={x:L*Math.cos(b),z:-L*Math.sin(b)},Wp={x:rr,z:0};
+      place(l1,{x:0,z:0},E);place(l2,E,Wp);eff.position.x=rr-.05;eff.position.z=0;tip.position.x=rr;tip.position.z=0}
+    pose(.35);
+    return {g,pose,tip};
+  }
+
+  /* ---------- scene state ---------- */
+  let root=null,stations=[],rob=null,wafer=null,carry=false,seq=[],si=0,st=0,theta=0,reach=.35,trackX=0,labels=[],extra=null,inkMats=[],procGlow=null,procT=0,videoEl=null;
+  const minJerk=x=>x<=0?0:x>=1?1:x*x*x*(10-15*x+6*x*x);
+  const angDiff=(a,b)=>{let d=b-a;return ((d+Math.PI*3)%(Math.PI*2))-Math.PI};
+  function clear(){
+    if(root){scene.remove(root);root.traverse(o=>{if(o.geometry&&o.geometry!==waferGeo)o.geometry.dispose()})}
+    labels.forEach(l=>l.d.remove());labels=[];stations=[];seq=[];si=0;st=0;rob=null;extra=null;carry=false;procGlow=null;
+    if(videoEl){videoEl.remove();videoEl=null}r.domElement.style.display='';
+  }
+  function label(text,obj,yTop,opt){const d=document.createElement('div');d.className='eqlbl'+(opt?' opt':'');d.textContent=text;view.appendChild(d);labels.push({d,obj,y:yTop});return d}
+
+  function buildCluster(cfg){
+    const L=layoutCluster(cfg),n=cfg==='hc'?8:cfg==='mc'?6:cfg==='pvd'?4:0;
+    const ap=cfg==='hc'?1.05:cfg==='mc'?.8:cfg==='pvd'?.75:.4;
+    if(n)root.add(transferChamber(n,ap,cfg==='pvd'?.5:0));
+    else{const tb=mesh(new THREE.BoxGeometry(.9,.32,.9),M.steelD,[0,.46,0]);root.add(tb);const lid=mesh(new THREE.BoxGeometry(.86,.02,.86),M.glass,[0,.64,0]);lid.userData.noEdge=true;root.add(lid);root.add(mesh(new THREE.BoxGeometry(.9,.3,.9),M.frame,[0,.15,0]))}
+    L.forEach(s=>{
+      const unit=s.kind==='ll'?loadlock():s.kind==='ib'?ionBeamChamber():processChamber(s.opt);
+      const depth=s.kind==='ll'?.4:s.kind==='ib'?.62:.7,D=ap+depth;
+      unit.g.position.set(Math.cos(s.a)*D,0,Math.sin(s.a)*D);unit.g.rotation.y=-s.a;root.add(unit.g);
+      const st={...s,unit,D,lbl:null};st.lbl=label(s.name+(s.opt?' · opt.':''),unit.g,unit.top,s.opt);stations.push(st);
+    });
+    const maxD=Math.max(...stations.map(s=>s.D));rob=robot(maxD/2+.06);root.add(rob.g);
+    // sequence: LL → PM (process) → other LL, cycling through the process modules
+    const lls=stations.filter(s=>s.kind==='ll'),pms=stations.filter(s=>s.kind!=='ll');let src=0;
+    seq.push({t:'home'});
+    pms.forEach((pm,i)=>{const a=lls[src%lls.length],b=lls[(src+1)%lls.length];
+      seq.push(...transfer(a,pm),{t:'proc',s:pm,d:2.2},...transfer(pm,b));src++});
+    placeWaferAt(lls[0]);
+  }
+  function transfer(a,b){return [{t:'rot',s:a},{t:'ext',s:a},{t:'pick',s:a},{t:'ret'},{t:'rot',s:b},{t:'ext',s:b},{t:'place',s:b},{t:'ret'}]}
+
+  function buildLoader(){ // multi-cassette automated loader: robot on a linear track
+    const track=mesh(new THREE.BoxGeometry(3.6,.08,.3),M.dark,[0,.3,0]);root.add(track);
+    root.add(mesh(new THREE.BoxGeometry(3.8,.3,.5),M.frame,[0,.15,0]));
+    const xs=[-1.2,0,1.2];
+    xs.forEach((x,i)=>{const u=cassette();u.g.position.set(x,0,1.15);root.add(u.g);const s={name:'CST '+(i+1),kind:'cst',a:Math.PI/2,unit:u,D:1.15,x};s.lbl=label(s.name,u.g,u.top);stations.push(s)});
+    const ll=loadlock();ll.g.position.set(0,0,-1.0);ll.g.rotation.y=Math.PI/2;root.add(ll.g);
+    const sLL={name:'LL',kind:'ll',a:-Math.PI/2,unit:ll,D:1.0,x:0};sLL.lbl=label('LL',ll.g,ll.top);stations.push(sLL);
+    const ib=ionBeamChamber();ib.g.position.set(0,0,-2.3);ib.g.rotation.y=Math.PI/2;root.add(ib.g);
+    const sIB={name:'IBE / IBD',kind:'ib',unit:ib};sIB.lbl=label('IBE / IBD',ib.g,ib.top);stations.push(sIB);
+    rob=robot(.62);root.add(rob.g);
+    seq.push({t:'home'});
+    stations.filter(s=>s.kind==='cst').forEach(c=>{
+      seq.push({t:'move',x:c.x},{t:'rot',s:c},{t:'ext',s:c},{t:'pick',s:c},{t:'ret'},{t:'move',x:0},{t:'rot',s:sLL},{t:'ext',s:sLL},{t:'place',s:sLL},{t:'ret'},
+               {t:'proc',s:sIB,d:2.4,via:sLL},{t:'ext',s:sLL},{t:'pick',s:sLL},{t:'ret'},{t:'move',x:c.x},{t:'rot',s:c},{t:'ext',s:c},{t:'place',s:c},{t:'ret'})});
+    placeWaferAt(stations[0]);
+  }
+
+  function buildStandalone(){ // one-package system: chamber, frame, electronics rack, gas box; lid opens to load
+    root.add(mesh(new THREE.BoxGeometry(3.2,.35,1.5),M.frame,[0,.175,0]));
+    const pc=processChamber(false,true);pc.g.position.set(.2,.05,0);pc.g.rotation.y=-Math.PI/2;root.add(pc.g);
+    const rack=new THREE.Group();rack.add(mesh(new THREE.BoxGeometry(.8,1.5,1.1),M.steelD,[0,1.1,0]));
+    for(let i=0;i<6;i++)rack.add(mesh(new THREE.BoxGeometry(.02,.06,.8),M.black,[.41,.6+i*.18,0]));
+    rack.add(mesh(new THREE.BoxGeometry(.02,.16,.3),M.blue,[.41,1.65,.2]));rack.position.set(-1.15,0,0);root.add(rack);
+    const gas=new THREE.Group();gas.add(mesh(new THREE.BoxGeometry(.5,.7,.9),M.steel,[0,.7,0]));
+    for(let i=0;i<3;i++)gas.add(mesh(new THREE.BoxGeometry(.12,.22,.12),i===1?M.blue:M.steelD,[.26,.75,-.25+i*.25]));gas.position.set(1.35,0,0);root.add(gas);
+    // lid hinge on the back edge of the chamber
+    const lidPivot=new THREE.Group();lidPivot.position.set(.2,1.07,-.66);root.add(lidPivot);
+    lidPivot.add(mesh(new THREE.CylinderGeometry(.68,.68,.06,56),M.steel,[0,0,.66]),mesh(new THREE.CylinderGeometry(.28,.28,.22,32),M.steelD,[0,.14,.66]),mesh(new THREE.TorusGeometry(.33,.03,8,40),M.copper,[0,.08,.66],[Math.PI/2,0,0]));
+    const s={name:T('eq.chamber','Process chamber'),kind:'pm',unit:pc};s.lbl=label('RIE / PVD',pc.g,1.45);stations.push(s);
+    label('Rack',rack,1.95);label('Gas',gas,1.15);
+    extra={lidPivot};
+    wafer=mesh(waferGeo,M.wafer);wafer.userData.noEdge=true;root.add(wafer);
+    seq=[{t:'lid',to:-1.15,lab:'OPEN LID'},{t:'drop',from:1.9,lab:'LOAD WAFER'},{t:'lid',to:0,lab:'CLOSE LID'},{t:'wait',d:.9,lab:'PUMPDOWN'},
+         {t:'proc',s,d:2.6,lab:'PROCESS · RIE / PVD'},{t:'wait',d:.8,lab:'VENT'},{t:'lid',to:-1.15,lab:'OPEN LID'},{t:'drop',from:1.9,up:true,lab:'UNLOAD WAFER'},{t:'lid',to:0,lab:'CLOSE LID'},{t:'wait',d:.8,lab:'IDLE'}];
+  }
+
+  function placeWaferAt(s){
+    if(!wafer){wafer=mesh(waferGeo,M.wafer);wafer.userData.noEdge=true;root.add(wafer)}
+    const p=s.unit.wafer.clone();s.unit.g.localToWorld(p);root.worldToLocal(p);wafer.position.copy(p);wafer.rotation.set(0,0,0);
+  }
+  function stationAngle(s){return s.a}
+  function stationReach(s){return s.D}
+
+  function frameCamera(){
+    const box=new THREE.Box3().setFromObject(root),sph=box.getBoundingSphere(new THREE.Sphere());
+    const d=sph.radius/Math.sin((cam.fov*Math.PI/180)/2)*(W()/H()<1?1.25:.98);
+    controls.target.copy(sph.center);cam.position.set(sph.center.x+d*.62,sph.center.y+d*.55,sph.center.z+d*.56);controls.update();
+  }
+
+  function load(b){
+    clear();root=new THREE.Group();scene.add(root);wafer=null;
+    if(b.dataset.video){videoEl=document.createElement('video');Object.assign(videoEl,{src:b.dataset.video,muted:true,loop:true,playsInline:true,autoplay:!RM});view.insertBefore(videoEl,view.firstChild);r.domElement.style.display='none';stateEl.textContent='';return}
+    if(b.dataset.glb){import('three/addons/loaders/GLTFLoader.js').then(({GLTFLoader})=>new GLTFLoader().load(b.dataset.glb,g=>{root.add(g.scene);frameCamera()}));stateEl.textContent='';return}
+    const cfg=b.dataset.cfg;
+    if(cfg==='mca')buildLoader();else if(cfg==='sps')buildStandalone();else buildCluster(cfg);
+    inkMats=[ink(root)];
+    stations.forEach(s=>{s.inkMat=new THREE.LineBasicMaterial({color:C.blue,transparent:true,opacity:0});ink(s.unit.g,s.inkMat)});
+    theta=stations[0]&&stations[0].a!=null?stations[0].a:0;reach=.35;trackX=stations[0]&&stations[0].x!=null?stations[0].x:0;
+    if(rob){rob.g.rotation.y=-theta;rob.g.position.x=trackX;rob.pose(reach)}
+    frameCamera();
+    if(RM){ // reduced motion: a still frame with the wafer in the first process module
+      const pm=stations.find(s=>s.kind==='pm'||s.kind==='ib');if(pm&&rob)placeWaferAt(pm);
+      if(pm&&pm.unit.glow)pm.unit.glow.opacity=.25;if(extra)wafer.position.set(.2,.53,0);
+      stateEl.textContent='';render();
+    }
+  }
+
+  /* ---------- sequencer ---------- */
+  let from={};
+  function begin(a){
+    st=0;from={theta,reach,trackX,lid:extra?extra.lidPivot.rotation.x:0};
+    const lab=a.lab||({home:'HOMING',rot:'ROTATE → '+(a.s&&a.s.name),ext:'EXTEND → '+(a.s&&a.s.name),pick:'PICK '+(a.s&&a.s.name),place:'PLACE '+(a.s&&a.s.name),ret:'RETRACT',proc:'PROCESS '+(a.s&&a.s.name),move:'TRACK → X '+(a.x!=null?a.x.toFixed(1):'')}[a.t]||'');
+    stateEl.textContent=lab;
+    stations.forEach(s=>{const on=a.s===s||Boolean(a.via&&a.via===s);if(s.inkMat)s.inkMat.opacity=on?.9:0;if(s.lbl)s.lbl.classList.toggle('on',on)});
+    if(a.t==='proc'&&a.s&&a.s.lbl)a.s.lbl.classList.add('on');
+    if(a.t==='pick')carry=true;
+  }
+  function dur(a){
+    switch(a.t){case 'home':return 1.2;case 'rot':return .45+Math.abs(angDiff(theta,a.s.a))*.42;case 'ext':return .75;case 'ret':return .65;
+      case 'pick':case 'place':return .35;case 'proc':return a.d;case 'move':return .5+Math.abs(a.x-trackX)*.45;case 'lid':return 1.0;case 'drop':return 1.1;case 'wait':return a.d}return .5}
+  let active=null,activeDur=1;
+  function step(dt){
+    if(!seq.length)return;
+    if(!active){active=seq[si];activeDur=dur(active);begin(active)}
+    st+=dt/activeDur;const k=minJerk(Math.min(st,1)),a=active;
+    switch(a.t){
+      case 'home':{reach=from.reach+(.32-from.reach)*k;const h=Math.sin(Math.min(st,1)*Math.PI);rob&&rob.pose(reach+h*.08);break}
+      case 'rot':theta=from.theta+angDiff(from.theta,a.s.a)*k;break;
+      case 'ext':reach=from.reach+(a.s.D-from.reach)*k;break;
+      case 'ret':reach=from.reach+(.35-from.reach)*k;break;
+      case 'move':trackX=from.trackX+(a.x-from.trackX)*k;break;
+      case 'pick':case 'place':{const lift=(a.t==='pick'?k:1-k)*.04;if(rob)rob.tip.position.y=.57+lift;break}
+      case 'proc':{const g=a.s.unit.glow;if(g)g.opacity=Math.sin(Math.min(st,1)*Math.PI)*(.22+.06*Math.sin(st*60));break}
+      case 'lid':{extra.lidPivot.rotation.x=from.lid+(a.to-from.lid)*k;break}
+      case 'drop':{const y0=a.up?.53:a.from,y1=a.up?a.from:.53;wafer.position.set(.2,y0+(y1-y0)*k,0);break}
+    }
+    if(rob){rob.g.rotation.y=-theta;rob.g.position.x=trackX;if(a.t!=='home')rob.pose(reach)}
+    if(carry&&rob&&wafer){const p=new THREE.Vector3();rob.tip.getWorldPosition(p);root.worldToLocal(p);wafer.position.copy(p)}
+    if(st>=1){
+      if(a.t==='place'){carry=false;placeWaferAt(a.s)}
+      if(a.t==='proc'&&a.s.unit.glow)a.s.unit.glow.opacity=0;
+      active=null;si=(si+1)%seq.length;if(si===0&&seq[0].t==='home')si=1;
+    }
+  }
+
+  /* ---------- render loop ---------- */
+  const v=new THREE.Vector3();let visible=true,last=performance.now();
+  new IntersectionObserver(es=>{visible=es[0].isIntersecting},{rootMargin:'60px'}).observe(view);
+  function render(){
+    controls.update();r.render(scene,cam);
+    const vw=W(),vh=H();
+    labels.forEach(l=>{v.set(0,l.y,0);l.obj.localToWorld(v);v.project(cam);l.d.style.left=((v.x*.5+.5)*vw)+'px';l.d.style.top=((-v.y*.5+.5)*vh)+'px';l.d.style.display=v.z<1?'':'none'});
+  }
+  function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;if(!visible)return;
+    if(!RM&&!paused)step(dt);render()}
+  if(!RM)requestAnimationFrame(loop);else controls.addEventListener('change',render);
+  addEventListener('resize',()=>{r.setSize(W(),H());cam.aspect=W()/H();cam.updateProjectionMatrix();frameCamera();if(RM)render()});
+  api={load};load(current);
+}
+})();

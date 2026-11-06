@@ -1,0 +1,12 @@
+runtime: php82
+
+handlers:
+- url: /(.*\.(gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf))$
+  static_files: \1
+  upload: (.*\.(gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf))$
+  secure: always
+
+- url: /(.*)
+  static_files: index.html
+  upload: index.html
+  secure: always
