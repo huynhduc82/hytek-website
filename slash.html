@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>HYTEK</title>
+<script>
+// App Engine serves this for paths without a trailing slash or extension: /protocols/secs-gem → /protocols/secs-gem/
+var p = location.pathname;
+if (/^\/(equipment|protocols|tools|learn)(\/[a-z0-9-]+)?$/.test(p)) location.replace(p + '/' + location.search + location.hash);
+else location.replace(location.origin + '/');
+</script>
+</head>
+<body></body>
+</html>

@@ -1,9 +1,24 @@
 runtime: php82
 
 handlers:
-- url: /(.*\.(gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf))$
+- url: /
+  static_files: index.html
+  upload: index.html
+  secure: always
+
+- url: /(.+)/
+  static_files: \1/index.html
+  upload: (.+)/index.html
+  secure: always
+
+- url: /(.*\.(html|gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf|pdf|webp))$
   static_files: \1
-  upload: (.*\.(gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf))$
+  upload: (.*\.(html|gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf|pdf|webp))$
+  secure: always
+
+- url: /([^.]*)
+  static_files: slash.html
+  upload: slash.html
   secure: always
 
 - url: /(.*)
