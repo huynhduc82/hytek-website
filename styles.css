@@ -35,7 +35,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;j
 .logo .mark{width:var(--M);height:var(--M);display:block;flex:none}
 .logo .wm{display:flex;flex-direction:column;height:var(--M);line-height:1}
 .logo .wm b{margin-top:calc(var(--M)*.1);font:800 calc(var(--M)*.56)/1 var(--display);font-stretch:112%;letter-spacing:.02em;color:#0b243b}
-.logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(9.5px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#4a5c6e}
+.logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(11px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#4a5c6e}
 header nav{display:flex;gap:28px;font:600 14px var(--display)}
 header nav a{text-decoration:none;padding:6px 0}
 header nav a.cta{color:var(--sig-ink)}
