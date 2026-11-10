@@ -59,3 +59,19 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 .rel{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px 28px}
 .rel a{font-weight:600}
 @media (max-width:900px){.dec{grid-template-columns:1fr}}
+
+/* equipment ↔ software panels and cross-links */
+.mp-panel{padding:0 0 22px;margin:0 0 22px;border-bottom:1px solid var(--rule)}
+.mp-panel:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.mp-panel h3{margin:0 0 6px;font:700 clamp(22px,1.8vw,28px)/1.1 var(--head);text-transform:uppercase}
+.mp-panel p{margin:0 0 12px;max-width:62ch}
+.mp-panel dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0 0 12px;font-size:15px}
+.mp-panel dt{font:600 12px/1.9 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.mp-panel dd{margin:0}
+.mp-panel dd a{font-weight:600}
+.mp-panel .ex span{font-family:var(--data);font-size:14px}
+.mp-more{font:600 14px var(--display);color:var(--sig-ink)}
+.xl{list-style:none;margin:0;padding:0}
+.xl li{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--rule)}
+.xl li a{font-weight:600}
+.xl-l{font-size:13px;color:var(--mute)}

@@ -22,6 +22,7 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script>if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm')</script>
 <script defer src="../../lang/vi-hub.js?v=6"></script>
+<script defer src="../../lang/vi-eqmap.js?v=6"></script>
 <script defer src="../../site-map.js?v=6"></script>
 <script defer src="../../site.js?v=6"></script>
 <script defer src="../../i18n.js?v=6"></script>
@@ -43,7 +44,17 @@
 </section>
 <section class="slot" data-slot="signals">
   <h2 data-i18n="hub.s.signals">Signals, protocols and software layer</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <!--xl--><div class="mp-panel" data-part="wafer-robot">
+  <h3 data-i18n="eq.wafer-robot.name">Wafer transfer robot</h3>
+  <p data-i18n="eq.wafer-robot.does">Moves wafers between loadlocks and process chambers inside the vacuum, one station at a time.</p>
+  <dl>
+    <dt data-i18n="eq.lbl.signals">Signals</dt><dd><span data-i18n="eq.sig.serial">Serial</span> · <span data-i18n="eq.sig.network">Network</span></dd>
+    <dt data-i18n="eq.lbl.protocols">Typical protocols</dt><dd><a class="ul" href="../../protocols/rs-232/index.html" data-i18n="hub.pg.rs-232">RS-232 / COM serial</a><span aria-hidden="true"> · </span><a class="ul" href="../../protocols/tcp-socket/index.html" data-i18n="hub.pg.tcp-socket">TCP/IP socket (ASCII / raw)</a></dd>
+    <dt data-i18n="eq.lbl.layer">Software layer</dt><dd><span data-i18n="eq.layer.driver">Device driver</span></dd>
+    <dt data-i18n="eq.lbl.example">Example event</dt><dd class="ex"><span data-i18n="eq.wafer-robot.ex">Wafer picked from loadlock A</span></dd>
+  </dl>
+  
+</div><!--/xl-->
 </section>
 <section class="slot" data-slot="events">
   <h2 data-i18n="hub.s.events">Example events</h2>
@@ -51,7 +62,7 @@
 </section>
 <section class="slot" data-slot="protocols">
   <h2 data-i18n="hub.s.protocols">Related protocols</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <!--xl--><p class="xl"><a class="ul" href="../../protocols/rs-232/index.html" data-i18n="hub.pg.rs-232">RS-232 / COM serial</a><span aria-hidden="true"> · </span><a class="ul" href="../../protocols/tcp-socket/index.html" data-i18n="hub.pg.tcp-socket">TCP/IP socket (ASCII / raw)</a></p><!--/xl-->
 </section>
 <section class="mail">
   <h2 data-i18n="hub.mail.h">Questions about this topic? Ask our engineers.</h2>
