@@ -15,6 +15,7 @@ test('footer carries the email and no root-absolute links', () => {
   assert.match(f, /mailto:dat\.do@hytekvn\.com\.vn/); assert.doesNotMatch(f, /href="\//);
 });
 
-test('footer "About HYTEK" points to the landing page', () => {
-  assert.match(UI.renderFooter('../'), /href="\.\.\/index\.html" data-i18n="hub\.nav\.about"/);
+test('logo is the only way home: no separate "About HYTEK" item in menu or footer', () => {
+  assert.doesNotMatch(UI.renderHeader('', null) + UI.renderFooter(''), /hub\.nav\.about/);
+  assert.match(UI.renderHeader('../', null), /class="logo" href="\.\.\/index\.html"/);
 });

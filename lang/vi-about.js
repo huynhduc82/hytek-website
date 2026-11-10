@@ -1,4 +1,4 @@
-/* Vietnamese for the About page (the original one-page site). Keys match data-i18n in about/index.html. */
+/* Vietnamese for the landing page (the original one-page site). Keys match data-i18n in index.html. */
 window.HY_VI = Object.assign(window.HY_VI || {}, {
   'meta.title':'HYTEK | Kỹ thuật phần mềm thiết bị bán dẫn',
   'meta.desc':'HYTEK SOLUTIONS VN phát triển phần mềm cho thiết bị bán dẫn và thiết bị màng mỏng tiên tiến: điều khiển thiết bị, chuyển động, hệ thống quy trình, truyền thông công nghiệp và tự động hóa GEM/SECS.',

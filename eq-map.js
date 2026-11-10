@@ -89,9 +89,16 @@
       const set = () => { pb.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation'); pb.innerHTML = paused ? PLAY : PAUSE; };
       set(); pb.onclick = () => { paused = !paused; set(); }; stage.appendChild(pb);
     }
-    build3d($('.mp-gl'), stage, { RM, isPaused: () => paused, onPick: id => select(id, true) })
-      .then(v => { view3d = v; v.highlight(sel); })
-      .catch(e => { console.warn('HYTEK: equipment map 3D unavailable', e); el.classList.add('fail'); });
+    // build the 3D scene only when the map comes near the screen (the landing page already runs two other scenes)
+    let started = false;
+    const start = () => {
+      if (started) return; started = true; io.disconnect();
+      build3d($('.mp-gl'), stage, { RM, isPaused: () => paused, onPick: id => select(id, true) })
+        .then(v => { view3d = v; v.highlight(sel); })
+        .catch(e => { console.warn('HYTEK: equipment map 3D unavailable', e); el.classList.add('fail'); });
+    };
+    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) start(); }, { rootMargin: '400px' });
+    io.observe(el);
   }
 
   async function build3d(host, stage, o) {

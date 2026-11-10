@@ -26,6 +26,8 @@
 <!-- classic defer scripts (not type=module) so the page also runs from file:// ; order matters: i18n first -->
 <script defer src="lang/vi-about.js?v=6"></script>
 <script defer src="lang/vi-hub.js?v=6"></script>
+<script defer src="lang/vi-eqmap.js?v=6"></script>
+<script defer src="lang/vi-home.js?v=6"></script>
 <script defer src="site-map.js?v=6"></script>
 <script defer src="site.js?v=6"></script>
 <script defer src="i18n.js?v=6"></script>
@@ -33,6 +35,10 @@
 <script defer src="gem-seq.js?v=6"></script>
 <script defer src="eq-kit.js?v=6"></script>
 <script defer src="equip.js?v=6"></script>
+<script defer src="eq-map-data.js?v=6"></script>
+<script defer src="eq-map.js?v=6"></script>
+<script defer src="data/feed.js?v=6"></script>
+<script defer src="home.js?v=6"></script>
 </head>
 <body data-section="about">
 
@@ -90,7 +96,7 @@
   </div>
 </div>
 
-<nav class="subnav" aria-label="About HYTEK"><a class="ul" href="#about" data-i18n="nav.about">About</a><a class="ul" href="#equipment" data-i18n="nav.equipment">Equipment</a><a class="ul" href="#services" data-i18n="nav.services">Services</a><a class="ul" href="#protocols" data-i18n="nav.protocols">Protocols</a><a class="ul" href="#gem" data-i18n="nav.gem">GEM / SECS</a><a class="ul" href="#simulator" data-i18n="nav.sim">Simulator</a><a class="ul cta" href="#contact" data-i18n="nav.contact">Contact</a></nav>
+<nav class="subnav" aria-label="About HYTEK"><a class="ul" href="#about" data-i18n="nav.about">About</a><a class="ul" href="#equipment" data-i18n="nav.equipment">Equipment</a><a class="ul" href="#services" data-i18n="nav.services">Services</a><a class="ul" href="#protocols" data-i18n="nav.protocols">Protocols</a><a class="ul" href="#gem" data-i18n="nav.gem">GEM / SECS</a><a class="ul" href="#simulator" data-i18n="nav.sim">Simulator</a><a class="ul" href="#hub" data-i18n="nav.hub">Knowledge hub</a><a class="ul cta" href="#contact" data-i18n="nav.contact">Contact</a></nav>
 <section id="about" class="about">
   <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="sheet" data-i18n="about.label">ABOUT HYTEK</div>
@@ -199,14 +205,37 @@
   </div>
 </section>
 
-<section class="hubin" aria-labelledby="hubinH">
+<section class="hubin" id="hub" aria-labelledby="hubinH">
   <div class="sheet" data-i18n="hubin.label">KNOWLEDGE HUB</div>
   <h2 id="hubinH" data-i18n="hubin.h2">Equipment, protocols and tools, explained from the software side.</h2>
-  <ul class="hubin-l">
-    <li><a href="hub/index.html"><b data-i18n="hubin.map">Equipment ↔ software map</b><span data-i18n="hubin.map.p">Click a part of a 3D cluster tool: its signals, protocols and software layer.</span></a></li>
-    <li><a href="protocols/secs-gem/index.html"><b data-i18n="hub.pg.secs-gem">SECS/GEM · HSMS</b><span data-i18n="hubin.sg.p">How equipment talks to the factory host, with a live HSMS state machine.</span></a></li>
-    <li><a href="tools/secs-decoder/index.html"><b data-i18n="hub.pg.secs-decoder">SECS-II / HSMS decoder</b><span data-i18n="hubin.dec.p">Paste message bytes, read them as SML.</span></a></li>
-  </ul>
+  <p class="lede" data-i18n="home.lede">Click any part of the cluster tool to see it from the software side: the signals it uses, the protocols it speaks and the software layer that drives it.</p>
+  <div class="mp-host" data-eqmap></div>
+  <div class="doors">
+    <h3 class="sec-h" data-i18n="home.doors.h">Where do you want to start?</h3>
+    <ul>
+      <li>
+        <h4 data-i18n="home.d1.h">I'm an engineer or OEM</h4>
+        <p data-i18n="home.d1.p">Protocol guides with message anatomy and pitfalls, and tools you can use on real bytes.</p>
+        <a class="ul" href="protocols/secs-gem/index.html" data-i18n="hub.pg.secs-gem">SECS/GEM · HSMS</a>
+        <a class="ul" href="tools/secs-decoder/index.html" data-i18n="hub.pg.secs-decoder">SECS-II / HSMS decoder</a>
+      </li>
+      <li>
+        <h4 data-i18n="home.d2.h">I'm learning</h4>
+        <p data-i18n="home.d2.p">Start with the equipment, part by part, then see which protocol each part speaks.</p>
+        <a class="ul" href="equipment/index.html" data-i18n="hub.nav.equipment">Equipment</a>
+        <a class="ul" href="protocols/index.html" data-i18n="hub.nav.protocols">Protocols</a>
+      </li>
+      <li>
+        <h4 data-i18n="home.d3.h">I need technical help</h4>
+        <p data-i18n="home.d3.p">Ask a question. Answers that help others are published, with identifying details removed.</p>
+        <a class="ul" href="mailto:dat.do@hytekvn.com.vn?subject=HYTEK%20technical%20question" data-i18n="hub.mail.btn">Email Dat Do</a>
+      </li>
+    </ul>
+  </div>
+  <div class="feed-box" id="feed" hidden>
+    <h3 class="sec-h" data-i18n="home.feed.h">Challenges and answers</h3>
+    <ul class="feed"></ul>
+  </div>
 </section>
 
 <section id="contact" class="contact">

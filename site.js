@@ -5,7 +5,7 @@
   const LOGO = '<svg class="mark" viewBox="6 10 100 100" aria-hidden="true"><defs><linearGradient id="lgb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b5cab"/><stop offset="1" stop-color="#1688dc"/></linearGradient></defs><rect x="6" y="10" width="100" height="100" rx="24" fill="url(#lgb)"/><g fill="#fff"><path d="M28 30h13v60H28zM71 30h13v60H71z"/><rect x="41" y="49" width="12" height="14" rx="1"/><rect x="53" y="42" width="19" height="28" rx="4" fill="#0b5cab" stroke="#fff" stroke-width="4"/><path d="M62.5 47l6 9-6 9-6-9z"/><rect x="55" y="36" width="3" height="6"/><rect x="62" y="36" width="3" height="6"/><rect x="69" y="36" width="3" height="6"/><rect x="55" y="70" width="3" height="6"/><rect x="62" y="70" width="3" height="6"/><rect x="69" y="70" width="3" height="6"/></g><g fill="none" stroke="#fff" stroke-width="2" opacity=".85"><path d="M16 46h12M84 46h12M16 74h12M84 74h12"/></g></svg><span class="wm"><b>HYTEK</b><small>Semiconductor Equipment Software</small></span>';
   const EN = {
     'hub.nav.equipment': 'Equipment', 'hub.nav.protocols': 'Protocols', 'hub.nav.tools': 'Tools',
-    'hub.nav.learn': 'Learn', 'hub.nav.about': 'About HYTEK', 'hub.nav.contact': 'Contact'
+    'hub.nav.learn': 'Learn', 'hub.nav.contact': 'Contact'
   };
 
   function renderHeader(root, current) {
@@ -26,7 +26,6 @@
     return `<footer class="foot">
   <div><b>HYTEK</b><span data-i18n="brand.tag">Engineering Software for Advanced Thin Film Systems</span></div>
   <a class="ul" href="mailto:${S.email}">${S.email}</a>
-  <a class="ul" href="${root}index.html" data-i18n="hub.nav.about">${EN['hub.nav.about']}</a>
   <span>© 2026 HYTEK SOLUTIONS VN COMPANY LIMITED</span>
 </footer>`;
   }

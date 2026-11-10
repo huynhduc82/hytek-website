@@ -7,12 +7,13 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'home.d1.h': 'Tôi là kỹ sư hoặc OEM',
   'home.d1.p': 'Hướng dẫn giao thức với cấu trúc bản tin và lỗi thường gặp, cùng công cụ dùng được với byte thật.',
   'home.d2.h': 'Tôi đang học',
-  'home.d2.p': 'Theo chân một wafer đi qua máy, rồi đi theo lộ trình học từ tín hiệu đến tự động hóa nhà máy.',
+  'home.d2.p': 'Bắt đầu từ thiết bị, từng bộ phận một, rồi xem mỗi bộ phận nói chuyện bằng giao thức nào.',
   'home.d3.h': 'Tôi cần hỗ trợ kỹ thuật',
   'home.d3.p': 'Gửi câu hỏi. Những câu trả lời có ích cho người khác sẽ được đăng lên, sau khi bỏ hết thông tin nhận dạng.',
   'home.tools.h': 'Công cụ miễn phí',
   'home.tools.dec': 'Dán hex, đọc SML',
   'home.mail.h': 'Đang làm phần mềm thiết bị? Trao đổi với kỹ sư của chúng tôi.',
+  'nav.hub': 'Kho kiến thức',
   'home.feed.h': 'Thử thách và giải đáp',
   'feed.kind.challenge': 'Thử thách', 'feed.kind.ask': 'Hỏi kỹ sư'
 });
