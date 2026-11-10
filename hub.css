@@ -136,22 +136,4 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 .frame span:last-child{margin-right:0}
 .slot a.ul,.lede a.ul{color:var(--sig-ink);font-weight:600}
 
-/* knowledge-hub block on the landing page: map, doors, feed */
-.hubin h2{margin:18px 0 0;max-width:22ch;font:800 clamp(36px,4.4vw,64px)/.95 var(--head);text-transform:uppercase}
-:lang(vi) .hubin h2{line-height:1.06}
-.hubin .mp{margin:clamp(24px,4vh,40px) 0 clamp(40px,7vh,72px)}
-.sec-h{margin:0 0 20px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:16px}
-.sec-h::after{content:"";flex:1;height:1.5px;background:var(--ink)}
-.doors ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--rule)}
-.doors li{padding:22px 22px 26px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.doors h4{margin:0 0 4px;font:800 clamp(26px,2.3vw,34px)/1 var(--head);text-transform:uppercase}
-:lang(vi) .doors h4{line-height:1.12}
-.doors p{margin:0 0 8px;color:var(--ink-2);max-width:40ch}
-.doors a{font-weight:600;color:var(--sig-ink)}
-.feed-box{margin-top:clamp(40px,7vh,72px)}
-.feed{list-style:none;margin:0;padding:0}
-.feed a{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--rule);text-decoration:none}
-.fd-k{font:500 13px var(--data);color:var(--mute)}
-@media (max-width:900px){.doors ul{grid-template-columns:1fr;border-left:0}.doors li{border-right:0;border-bottom:1px solid var(--rule);padding:20px 0}}
 
-.hubin{padding-bottom:clamp(24px,5vh,56px)}

@@ -98,18 +98,11 @@ test('the landing page is the original one-page site: old anchors work in place'
     assert.match(html, new RegExp(`id="${id}"`), id);
 });
 
-test('the landing page carries the knowledge hub: 3D map, doors, sub-nav entry', () => {
+test('landing page is the original site only: no extra hub block, no duplicate map', () => {
   const html = read(path.join(ROOT, 'index.html'));
-  assert.match(html, /<section[^>]*id="hub"/);
-  assert.match(html, /data-eqmap/);
-  for (const js of ['eq-kit.js', 'eq-map-data.js', 'eq-map.js', 'lang/vi-eqmap.js']) assert.match(html, new RegExp(`src="${js}`), js);
-  assert.match(html, /class="subnav"[\s\S]*?href="#hub"/);
-  assert.ok(!fs.existsSync(path.join(ROOT, 'hub/index.html')), 'no duplicate hub home');
-});
-
-test('no link on any page leads to a placeholder-only learn page from the landing', () => {
-  const html = read(path.join(ROOT, 'index.html'));
-  for (const p of ['learn/wafer-journey', 'learn/path', 'learn/ask']) assert.doesNotMatch(html, new RegExp(`href="${p}/`), p);
+  assert.doesNotMatch(html, /id="hub"|data-eqmap|class="hubin"/);
+  assert.doesNotMatch(html, /href="#hub"/);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'hub/index.html')));
 });
 
 test('every page loads the current styles.css and hub.css (same cache key)', () => {
