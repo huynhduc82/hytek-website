@@ -75,3 +75,26 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 .xl li{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--rule)}
 .xl li a{font-weight:600}
 .xl-l{font-size:13px;color:var(--mute)}
+
+/* clickable 3D equipment map */
+.mp{display:grid;grid-template-columns:minmax(0,7fr) minmax(300px,5fr);gap:0;margin:clamp(28px,4vh,44px) 0;border:1.5px solid var(--ink);background:#fff}
+.mp-stage{position:relative;min-height:clamp(420px,64vh,660px);border-right:1.5px solid var(--ink)}
+.mp-gl{position:absolute;inset:0}
+.mp-gl canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.mp-hint{position:absolute;left:16px;bottom:12px;margin:0;font:600 13px var(--display);color:var(--mute);pointer-events:none}
+.mp.fail .mp-stage{display:none}
+.mp.fail{grid-template-columns:1fr}
+.mp-side{display:flex;flex-direction:column;padding:20px 22px;max-height:clamp(420px,64vh,660px);overflow:auto}
+.mp-lbl{margin:0 0 8px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.mp-list{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.mp-part{min-height:36px;padding:0 10px;font:600 13px var(--display);color:var(--ink);background:transparent;border:1.5px solid var(--rule);cursor:pointer}
+.mp-part:hover{border-color:var(--ink)}
+.mp-part[aria-pressed="true"]{background:var(--sig);border-color:var(--sig);color:#fff}
+.mp-info .mp-panel{border:0;margin:0;padding:0}
+.mp-note{margin:auto 0 0;padding-top:14px;font-size:13px;color:var(--mute)}
+@media (max-width:900px){
+  .mp{grid-template-columns:1fr}
+  .mp-stage{min-height:340px;border-right:0;border-bottom:1.5px solid var(--ink)}
+  .mp-side{max-height:none}
+}
+@media (max-width:520px){.mp-panel dl{grid-template-columns:1fr;gap:2px}.mp-panel dd{margin-bottom:8px}}
