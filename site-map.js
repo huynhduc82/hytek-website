@@ -8,7 +8,7 @@
       { id: 'protocols', path: 'protocols/index.html', key: 'hub.nav.protocols' },
       { id: 'tools', path: 'tools/index.html', key: 'hub.nav.tools' },
       { id: 'learn', path: 'learn/index.html', key: 'hub.nav.learn' },
-      { id: 'about', path: 'about/index.html', key: 'hub.nav.about' }
+      { id: 'about', path: 'index.html', key: 'hub.nav.about' }
     ],
     pages: [
       P('equipment', 'cluster-tool', 'equipment', 'Cluster tool'), P('equipment', 'loadlock', 'equipment', 'Loadlock'),

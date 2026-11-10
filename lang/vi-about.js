@@ -97,4 +97,10 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'ct.t1':'Thiết bị bán dẫn','ct.t2':'Hệ thống màng mỏng','ct.t3':'Truyền thông công nghiệp',
   'ct.btn':'Liên hệ đội ngũ kỹ sư',
   'brand.tag':'Phần mềm kỹ thuật cho hệ thống màng mỏng tiên tiến'
+,
+  'hubin.label': 'KHO KIẾN THỨC',
+  'hubin.h2': 'Thiết bị, giao thức và công cụ, giải thích từ phía phần mềm.',
+  'hubin.map': 'Bản đồ thiết bị ↔ phần mềm', 'hubin.map.p': 'Bấm vào một bộ phận của cluster tool 3D: tín hiệu, giao thức và tầng phần mềm của nó.',
+  'hubin.sg.p': 'Thiết bị nói chuyện với host nhà máy thế nào, kèm mô phỏng trạng thái HSMS.',
+  'hubin.dec.p': 'Dán byte của bản tin, đọc ở dạng SML.'
 });

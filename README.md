@@ -1,10 +1,10 @@
 # HYTEK SOLUTIONS VN — website
 
 Static, bilingual (EN/VI) website for HYTEK SOLUTIONS VN COMPANY LIMITED — semiconductor equipment software engineering.
-A knowledge hub (equipment, protocols, tools, learning) plus the company page under `about/`.
+The company landing page plus a knowledge hub (equipment, protocols, tools, learning).
 
-- `index.html` — home: clickable 3D equipment map, entry points, featured tools
-- `about/` — company page (scroll-driven 3D chamber, equipment platforms, GEM/SECS, simulator, partnership)
+- `index.html` — landing page (scroll-driven 3D chamber, equipment platforms, GEM/SECS, simulator, partnership, knowledge-hub entry)
+- `hub/` — knowledge-hub home: clickable 3D equipment map, entry points, featured tools
 - `equipment/`, `protocols/`, `tools/`, `learn/` — one folder per page, each with its own `index.html`
 - `site-map.js` — page registry (menu and page list); `site.js` — shared header, menu and footer
 - `i18n.js` + `lang/*.js` — English / Vietnamese switch (`?lang=vi`)

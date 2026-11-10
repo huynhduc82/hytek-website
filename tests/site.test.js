@@ -92,9 +92,16 @@ test('public-safe: no internal notes in shipped files', () => {
   }
 });
 
-test('old anchors are redirected by site.js', () => {
+test('the landing page is the original one-page site: old anchors work in place', () => {
+  const html = read(path.join(ROOT, 'index.html'));
   for (const id of ['stage', 'about', 'equipment', 'services', 'protocols', 'gem', 'simulator', 'partnership', 'contact'])
-    assert.ok(UI.OLD.includes(id), id);
+    assert.match(html, new RegExp(`id="${id}"`), id);
+});
+
+test('the landing page links into the knowledge hub', () => {
+  const html = read(path.join(ROOT, 'index.html'));
+  assert.match(html, /href="hub\/index\.html"/);
+  assert.ok(fs.existsSync(path.join(ROOT, 'hub/index.html')));
 });
 
 test('every page loads the current styles.css and hub.css (same cache key)', () => {

@@ -13,6 +13,6 @@
   const box = document.getElementById('feed'), list = box && box.querySelector('ul');
   if (!list) return;
   const t = (k, en) => (w.HY_T ? w.HY_T(k, en) : en);
-  const draw = () => { const items = w.HY_FEED || []; list.innerHTML = renderFeed(items, '', t); box.hidden = !items.length; };
+  const draw = () => { const items = w.HY_FEED || []; list.innerHTML = renderFeed(items, document.documentElement.dataset.root || '', t); box.hidden = !items.length; };
   addEventListener('hy:lang', draw); draw();
 })(typeof window !== 'undefined' ? window : globalThis);

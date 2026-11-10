@@ -11,7 +11,7 @@ function route(u) {
   }
   return null;
 }
-for (const u of ['/', '/about/', '/protocols/secs-gem/', '/protocols/secs-gem/index.html', '/tools/secs-decoder/', '/site.js', '/favicon.png', '/lang/vi-hub.js'])
+for (const u of ['/', '/hub/', '/protocols/secs-gem/', '/protocols/secs-gem/index.html', '/tools/secs-decoder/', '/site.js', '/favicon.png', '/lang/vi-hub.js'])
   test('routes ' + u, () => {
     const f = route(u);
     assert.ok(f, 'no handler');
@@ -24,7 +24,7 @@ test('pdf and webp are served as static files', () => {
   assert.equal(route('/og/share.webp'), 'og/share.webp');
 });
 test('folder URLs without a trailing slash get the slash-adding page, not a broken home page', () => {
-  for (const u of ['/about', '/protocols/secs-gem', '/tools', '/old/page']) assert.equal(route(u), 'slash.html', u);
+  for (const u of ['/hub', '/protocols/secs-gem', '/tools', '/old/page']) assert.equal(route(u), 'slash.html', u);
 });
 test('slash.html adds the slash for known folders and sends anything else home', () => {
   const html = fs.readFileSync(path.join(ROOT, 'slash.html'), 'utf8');
@@ -35,7 +35,7 @@ test('slash.html adds the slash for known folders and sends anything else home',
     return to;
   };
   assert.equal(go('/protocols/secs-gem', '?lang=vi', '#a'), '/protocols/secs-gem/?lang=vi#a');
-  assert.equal(go('/about'), '/about/');
+  assert.equal(go('/hub'), '/hub/');
   assert.equal(go('/old/page'), 'https://x/');
 });
 test('other unknown files still land on the home page', () => assert.equal(route('/old/page.php'), 'index.html'));

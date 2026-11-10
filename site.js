@@ -7,8 +7,6 @@
     'hub.nav.equipment': 'Equipment', 'hub.nav.protocols': 'Protocols', 'hub.nav.tools': 'Tools',
     'hub.nav.learn': 'Learn', 'hub.nav.about': 'About HYTEK', 'hub.nav.contact': 'Contact'
   };
-  // the old one-page site's anchors; bookmarks like index.html#protocols are sent to the About page
-  const OLD = ['stage', 'about', 'equipment', 'services', 'protocols', 'gem', 'simulator', 'partnership', 'contact'];
 
   function renderHeader(root, current) {
     const S = w.HY_SITE;
@@ -28,18 +26,17 @@
     return `<footer class="foot">
   <div><b>HYTEK</b><span data-i18n="brand.tag">Engineering Software for Advanced Thin Film Systems</span></div>
   <a class="ul" href="mailto:${S.email}">${S.email}</a>
-  <a class="ul" href="${root}about/index.html" data-i18n="hub.nav.about">${EN['hub.nav.about']}</a>
+  <a class="ul" href="${root}index.html" data-i18n="hub.nav.about">${EN['hub.nav.about']}</a>
   <span>© 2026 HYTEK SOLUTIONS VN COMPANY LIMITED</span>
 </footer>`;
   }
 
-  const api = { renderHeader, renderFooter, OLD };
+  const api = { renderHeader, renderFooter };
   if (typeof module === 'object' && module.exports) { module.exports = api; return; }
   w.HY_SITE_UI = api;
   if (typeof document === 'undefined') return;
 
   const de = document.documentElement, root = de.dataset.root || '';
-  if (de.dataset.home === '1' && OLD.includes(location.hash.slice(1))) { location.replace('about/index.html' + location.hash); return; }
   const hh = document.getElementById('hy-header'), hf = document.getElementById('hy-footer');
   if (hh) hh.outerHTML = renderHeader(root, document.body.dataset.section || null);
   if (hf) hf.outerHTML = renderFooter(root);

@@ -7,7 +7,7 @@
 <script>
 // App Engine serves this for paths without a trailing slash or extension: /protocols/secs-gem → /protocols/secs-gem/
 var p = location.pathname;
-if (/^\/(about|equipment|protocols|tools|learn)(\/[a-z0-9-]+)?$/.test(p)) location.replace(p + '/' + location.search + location.hash);
+if (/^\/(hub|equipment|protocols|tools|learn)(\/[a-z0-9-]+)?$/.test(p)) location.replace(p + '/' + location.search + location.hash);
 else location.replace(location.origin + '/');
 </script>
 </head>
