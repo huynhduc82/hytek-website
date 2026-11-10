@@ -132,16 +132,8 @@
       u.g.position.set(...at(s.a, D)); u.g.rotation.y = -s.a;
       tagPart(s.kind === 'll' ? 'loadlock' : 'process-chamber', u.g);
       st[s.name] = { a: s.a, D, unit: u };
-      if (s.kind === 'pm') { const v = mesh(new THREE.BoxGeometry(.08, .3, .5), M.blue, at(s.a, ap + .05, .46)); v.rotation.y = -s.a; tagPart('gate-valve', v); }
-      if (s.kind === 'll') { const c = K.cassette(); c.g.position.set(...at(s.a, D + .85)); c.g.rotation.y = -s.a; tagPart('load-port', c.g); }
     });
-    const box = (wd, h, dp, mat, p) => mesh(new THREE.BoxGeometry(wd, h, dp), mat, p);
-    const angOf = n => st[n].a;
-    { const g = new THREE.Group(); g.add(mesh(new THREE.CylinderGeometry(.22, .22, .5, 32), M.dark, [0, .25, 0])); g.add(box(.5, .25, .4, M.frame, [0, .12, .35])); g.position.set(...at(angOf('PM3'), 2.75)); tagPart('vacuum-pump', g); }
-    { const g = new THREE.Group(); g.add(box(.55, 1.0, .45, M.frame, [0, .5, 0])); g.add(box(.3, .06, .02, M.blue, [0, .78, .24])); g.position.set(...at(angOf('PM5'), 2.85)); g.rotation.y = -angOf('PM5') + Math.PI / 2; tagPart('gas-mfc', g); }
-    { const g = new THREE.Group(); g.add(box(.5, 1.2, .5, M.dark, [0, .6, 0])); for (let i = 0; i < 5; i++) g.add(box(.42, .03, .02, M.black, [0, .35 + i * .14, .26])); g.add(box(.1, .1, .02, M.blue, [.12, 1.05, .26])); g.position.set(...at(angOf('PM4'), 2.85)); g.rotation.y = -angOf('PM4') + Math.PI / 2; tagPart('rf-generator', g); }
-    { const g = new THREE.Group(); g.add(mesh(new THREE.CylinderGeometry(.03, .03, .5, 12), M.steelD, [0, .25, 0])); g.add(mesh(new THREE.CylinderGeometry(.1, .1, .14, 24), M.steel, [0, .55, 0])); g.add(mesh(new THREE.CylinderGeometry(.07, .07, .02, 24), M.blue, [0, .63, 0])); g.position.set(...at(angOf('PM2'), 2.55)); tagPart('pressure-gauge', g); }
-    { const g = new THREE.Group(); g.add(box(.7, 1.5, .5, M.frame, [0, .75, 0])); g.add(box(.5, .34, .02, M.black, [0, 1.15, .26])); g.add(box(.44, .26, .01, M.blue, [0, 1.15, .27])); g.position.set(-2.9, 0, 1.3); g.rotation.y = Math.PI / 3; tagPart('host-link', g); }
+    K.dressCluster('hc', Object.keys(st).map(name => ({ name, ...st[name], kind: name.startsWith('LL') ? 'll' : 'pm' })), ap).forEach(({ id, g }) => tagPart(id, g));
     const rob = K.robot(1.75 / 2 + .06); tagPart('wafer-robot', rob.g);
     const wafer = mesh(K.waferGeo, M.wafer); wafer.userData.noEdge = true; world.add(wafer);
 

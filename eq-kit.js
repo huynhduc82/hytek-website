@@ -92,7 +92,34 @@ function HY_EQKIT(THREE){
     pose(.35);
     return {g,pose,tip};
   }
-  return {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot};
+  /* ---------- equipment around a cluster tool (load ports, pumps, gas box, RF rack, gauge, host cabinet) ---------- */
+  const box=(w,h,d,m,p)=>mesh(new THREE.BoxGeometry(w,h,d),m,p);
+  function pumpUnit(){const g=new THREE.Group();g.add(mesh(new THREE.CylinderGeometry(.22,.22,.5,32),M.dark,[0,.25,0]));g.add(box(.5,.25,.4,M.frame,[0,.12,.35]));return g}
+  function gasBox(){const g=new THREE.Group();g.add(box(.55,1.0,.45,M.frame,[0,.5,0]));g.add(box(.3,.06,.02,M.blue,[0,.78,.24]));return g}
+  function rfRack(){const g=new THREE.Group();g.add(box(.5,1.2,.5,M.dark,[0,.6,0]));for(let i=0;i<5;i++)g.add(box(.42,.03,.02,M.black,[0,.35+i*.14,.26]));g.add(box(.1,.1,.02,M.blue,[.12,1.05,.26]));return g}
+  function gauge(){const g=new THREE.Group();g.add(mesh(new THREE.CylinderGeometry(.03,.03,.5,12),M.steelD,[0,.25,0]));g.add(mesh(new THREE.CylinderGeometry(.1,.1,.14,24),M.steel,[0,.55,0]));g.add(mesh(new THREE.CylinderGeometry(.07,.07,.02,24),M.blue,[0,.63,0]));return g}
+  function hostCabinet(){const g=new THREE.Group();g.add(box(.7,1.5,.5,M.frame,[0,.75,0]));g.add(box(.5,.34,.02,M.black,[0,1.15,.26]));g.add(box(.44,.26,.01,M.blue,[0,1.15,.27]));return g}
+  // where each unit stands, per platform: [station name or angle, radius, faces the tool?]; host = [x, z, rotY]
+  const DRESS={
+    hc:{pump:['PM3',2.75],gas:['PM5',2.85,1],rf:['PM4',2.85,1],gauge:['PM2',2.55],host:[-2.9,1.3,Math.PI/3]},
+    mc:{pump:[Math.PI*1.5,2.4],gas:[Math.PI*7/6,2.45,1],rf:[0,2.1,1],gauge:[Math.PI*5/6,2.1],host:[-2.6,1.7,Math.PI/3]},
+    pvd:{pump:[Math.PI*1.5,2.55],gas:[Math.PI*1.25,2.25,1],rf:[Math.PI*1.75,2.2,1],gauge:[Math.PI*.75,1.95],host:[-2.4,1.7,Math.PI/3]}
+  };
+  // returns [{id, g}] already positioned; ids match the equipment-map part ids
+  function dressCluster(cfg,stations,ap){
+    const T=DRESS[cfg];if(!T)return [];
+    const out=[],at=(a,d,y=0)=>[Math.cos(a)*d,y,Math.sin(a)*d];
+    const ang=k=>typeof k==='number'?k:stations.find(s=>s.name===k).a;
+    stations.forEach(s=>{
+      if(s.kind==='pm'){const v=box(.08,.3,.5,M.blue,at(s.a,ap+.05,.46));v.rotation.y=-s.a;out.push({id:'gate-valve',g:v})}
+      if(s.kind==='ll'){const c=cassette();c.g.position.set(...at(s.a,s.D+.85));c.g.rotation.y=-s.a;out.push({id:'load-port',g:c.g})}
+    });
+    [['pump','vacuum-pump',pumpUnit],['gas','gas-mfc',gasBox],['rf','rf-generator',rfRack],['gauge','pressure-gauge',gauge]].forEach(([k,id,make])=>{
+      const [where,r,face]=T[k],a=ang(where),g=make();g.position.set(...at(a,r));if(face)g.rotation.y=-a+Math.PI/2;out.push({id,g})});
+    const h=hostCabinet();h.position.set(T.host[0],0,T.host[1]);h.rotation.y=T.host[2];out.push({id:'host-link',g:h});
+    return out;
+  }
+  return {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot,dressCluster};
 }
 /* station layout for cluster tools: angle a (x=cos a, z=sin a), kind, name */
 function layoutCluster(cfg){

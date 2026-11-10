@@ -68,7 +68,7 @@ async function init(){
   controls.addEventListener('end',()=>{if(!RM)resumeT=setTimeout(()=>controls.autoRotate=true,4000)});
 
   const K=window.HY_EQKIT(THREE);
-  const {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot}=K;
+  const {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot,dressCluster}=K;
 
   /* ---------- scene state ---------- */
   let root=null,stations=[],rob=null,wafer=null,carry=false,seq=[],si=0,st=0,theta=0,reach=.35,trackX=0,labels=[],extra=null,inkMats=[],procGlow=null,procT=0,videoEl=null;
@@ -92,6 +92,8 @@ async function init(){
       unit.g.position.set(Math.cos(s.a)*D,0,Math.sin(s.a)*D);unit.g.rotation.y=-s.a;root.add(unit.g);
       const st={...s,unit,D,lbl:null};st.lbl=label(s.name+(s.opt?' · opt.':''),unit.g,unit.top,s.opt);stations.push(st);
     });
+    // the equipment around the tool, same parts as the hub's equipment map
+    if(n)dressCluster(cfg,stations,ap).forEach(({g})=>root.add(g));
     const maxD=Math.max(...stations.map(s=>s.D));rob=robot(maxD/2+.06);root.add(rob.g);
     // sequence: LL → PM (process) → other LL, cycling through the process modules
     const lls=stations.filter(s=>s.kind==='ll'),pms=stations.filter(s=>s.kind!=='ll');let src=0;
