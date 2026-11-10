@@ -22,45 +22,118 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script>if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm')</script>
 <script defer src="../../lang/vi-hub.js?v=6"></script>
+<script defer src="../../lang/vi-secs-gem.js?v=6"></script>
 <script defer src="../../lang/vi-eqmap.js?v=6"></script>
 <script defer src="../../site-map.js?v=6"></script>
 <script defer src="../../site.js?v=6"></script>
 <script defer src="../../i18n.js?v=6"></script>
+<script defer src="../../gem-seq.js?v=6"></script>
+<script defer src="hsms.js?v=6"></script>
 </head>
 <body data-section="protocols" data-kind="protocol" data-page="secs-gem">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="pause" viewBox="0 0 16 16"><path d="M5 3v10M11 3v10"/></symbol><symbol id="play" viewBox="0 0 16 16"><path d="M5 3l8 5-8 5z"/></symbol></svg>
 <div id="hy-header"></div>
 <main class="hub">
   <nav class="crumb" aria-label="Breadcrumb"><a href="../index.html" data-i18n="hub.nav.protocols">Protocols</a><span aria-hidden="true">/</span></nav>
   <div class="hub-head">
     <h1 data-i18n="hub.pg.secs-gem">SECS/GEM · HSMS</h1>
+    <p class="lede" data-i18n="sg.lede">How semiconductor equipment talks to the factory host: three standards stacked on top of each other, each with one job.</p>
   </div>
 <section class="slot" data-slot="definition">
   <h2 data-i18n="hub.s.definition">What it is</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <div>
+    <ol class="stack">
+      <li><b>GEM</b> <span class="std">SEMI E30</span><p data-i18n="sg.d.gem">What the equipment must do: communication and control states, collection events, alarms, status variables, remote commands and recipe handling. The behaviour a host can count on from every tool.</p></li>
+      <li><b>SECS-II</b> <span class="std">SEMI E5</span><p data-i18n="sg.d.secs">The language: messages named by stream and function (S1F13, S6F11…), with a body built from typed items such as lists, ASCII text and unsigned integers.</p></li>
+      <li><b>HSMS</b> <span class="std">SEMI E37</span><p data-i18n="sg.d.hsms">The transport: carries SECS-II messages over TCP/IP, with a 10-byte header and a small set of control messages to open, check and close the session. (The older SECS-I, SEMI E4, does the same over RS-232.)</p></li>
+    </ol>
+  </div>
 </section>
 <section class="slot" data-slot="in-equipment">
   <h2 data-i18n="hub.s.in-equipment">Where it sits in the equipment</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <div>
+    <p data-i18n="sg.where">GEM sits on top of the equipment control software. The tool keeps running its own sequences, devices and interlocks; the GEM layer reports what happens to the factory host and accepts the host's commands when the tool allows it.</p>
+    <p><a class="ul" href="../../equipment/index.html" data-i18n="sg.where.link">See the factory host link on the equipment map</a></p>
+  </div>
 </section>
 <section class="slot" data-slot="simulation">
   <h2 data-i18n="hub.s.simulation">Try it</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <div>
+    <h3 class="sub" data-i18n="sg.sim.h1">HSMS connection states</h3>
+    <div class="hs" id="hsmsSim">
+      <ol class="hs-states" aria-label="HSMS states">
+        <li data-state="NOT_CONNECTED">NOT CONNECTED</li>
+        <li data-state="NOT_SELECTED">CONNECTED · NOT SELECTED</li>
+        <li data-state="SELECTED">CONNECTED · SELECTED</li>
+      </ol>
+      <div class="hs-btns">
+        <button type="button" class="chip" data-ev="connect">TCP connect</button>
+        <button type="button" class="chip" data-ev="select">Select</button>
+        <button type="button" class="chip" data-ev="linktest">Linktest</button>
+        <button type="button" class="chip" data-ev="deselect">Deselect</button>
+        <button type="button" class="chip" data-ev="separate">Separate</button>
+        <button type="button" class="chip" data-ev="t7">T7 timeout</button>
+        <button type="button" class="chip" data-ev="close">TCP close</button>
+        <button type="button" class="chip ghost" data-ev="reset" data-i18n="sg.sim.reset">Reset</button>
+      </div>
+      <ol class="hs-log" aria-live="polite"></ol>
+    </div>
+    <p class="note" data-i18n="sg.sim.note">The equipment waits as the passive side. After TCP connects, the host must select the session before T7 runs out; only a selected session carries data messages.</p>
+    <h3 class="sub" data-i18n="sg.sim.h2">A typical exchange</h3>
+    <div class="gembox">
+      <button class="replay" id="gemCtl" type="button"><svg class="i" aria-hidden="true"><use href="#pause"/></svg><span>Pause exchange</span></button>
+      <svg id="seq" viewBox="0 0 700 520" role="img" aria-label="Message exchange between factory host and equipment: establish communications, host command, process start event, alarm report, process complete event."></svg>
+    </div>
+  </div>
 </section>
 <section class="slot" data-slot="anatomy">
   <h2 data-i18n="hub.s.anatomy">Message anatomy</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <div>
+    <div class="frame" role="img" aria-label="HSMS message: 4-byte length, 10-byte header, SECS-II body">
+      <span class="f-len">Length<small>4 B</small></span>
+      <span>Session ID<small>2 B</small></span>
+      <span>W · Stream<small>1 B</small></span>
+      <span>Function<small>1 B</small></span>
+      <span>PType<small>1 B</small></span>
+      <span>SType<small>1 B</small></span>
+      <span class="f-sys">System bytes<small>4 B</small></span>
+      <span class="f-body">SECS-II body<small>0…n B</small></span>
+    </div>
+    <div class="frame item" role="img" aria-label="SECS-II item: format byte, 1 to 3 length bytes, data">
+      <span>Format · 6 bit<small>+ length count · 2 bit</small></span>
+      <span>Length<small>1–3 B</small></span>
+      <span class="f-body">Data / nested items<small>n B</small></span>
+    </div>
+    <p data-i18n="sg.anat">The header says who the message is for, which stream and function it is, whether a reply is wanted (W-bit) and which request a reply answers (system bytes). The body is a tree of items; a list counts its items, every other format counts its bytes.</p>
+    <p><a class="ul" href="../../tools/secs-decoder/index.html" data-i18n="sg.anat.link">Paste real bytes into the SECS-II / HSMS decoder</a></p>
+  </div>
 </section>
 <section class="slot" data-slot="terms">
   <h2 data-i18n="hub.s.terms">Key terms</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <dl class="terms">
+    <dt>Stream / Function</dt><dd data-i18n="sg.t.sf">The message name. Odd functions are primary messages, the even function after it is the reply (S1F13 → S1F14).</dd>
+    <dt>W-bit</dt><dd data-i18n="sg.t.w">Set on a primary message when the sender wants a reply.</dd>
+    <dt>System bytes</dt><dd data-i18n="sg.t.sys">A number chosen by the sender and copied into the reply, so replies can be matched to requests.</dd>
+    <dt>Select / Linktest</dt><dd data-i18n="sg.t.sel">HSMS control messages: open the session for data, and check that the other side is still alive.</dd>
+    <dt>T3 · T7</dt><dd data-i18n="sg.t.tim">Timers: T3 is how long to wait for a reply; T7 is how long a new connection may stay unselected.</dd>
+    <dt>Collection event</dt><dd data-i18n="sg.t.ce">Something that happened on the tool (a state change, a process step) that the host can ask to be told about, with chosen data attached as a report.</dd>
+    <dt>Alarm</dt><dd data-i18n="sg.t.al">A condition reported when it is set and again when it clears.</dd>
+    <dt>Remote command</dt><dd data-i18n="sg.t.rc">A command from the host such as start or stop, accepted or rejected by the tool.</dd>
+  </dl>
 </section>
 <section class="slot" data-slot="pitfalls">
   <h2 data-i18n="hub.s.pitfalls">Common pitfalls</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <ul class="pits">
+    <li data-i18n="sg.p1">Replies that arrive after T3: the sender has already given up, so the late reply is an error, not an answer.</li>
+    <li data-i18n="sg.p2">A session that is connected but never selected: no data flows, and T7 closes it.</li>
+    <li data-i18n="sg.p3">System bytes not copied into the reply, or a reply sent when the W-bit was not set.</li>
+    <li data-i18n="sg.p4">Event reports sent before the host has defined and enabled them.</li>
+    <li data-i18n="sg.p5">Mixing up the communication state (is the link up?) with the control state (online or offline, local or remote).</li>
+  </ul>
 </section>
 <section class="slot" data-slot="tools">
   <h2 data-i18n="hub.s.tools">Related tools</h2>
-  <p class="soon" data-i18n="hub.soon">Coming soon</p>
+  <ul class="rel"><li><a class="ul" href="../../tools/secs-decoder/index.html" data-i18n="hub.pg.secs-decoder">SECS-II / HSMS decoder</a></li></ul>
 </section>
 <section class="slot" data-slot="used-by">
   <h2 data-i18n="hub.s.used-by">Used by</h2>
