@@ -2,7 +2,7 @@
 :root{
   --paper:#f4f7f9;--paper-2:#e8eef3;--ink:#09131f;--ink-2:#26333f;--mute:#586676;--rule:#d6dfe7;--sig:#0b6ac7;--sig-text:#0b6ac7;--sig-ink:#0a58a6;--navy:#07121d;--alarm:#f5a524;
   --pad:clamp(20px,3vw,40px);--ease:cubic-bezier(.16,1,.3,1);
-  --display:'Archivo',sans-serif;--data:'IBM Plex Mono',ui-monospace,monospace;
+  --display:'Be Vietnam Pro',system-ui,sans-serif;--head:'Barlow Condensed','Arial Narrow',sans-serif;--data:'IBM Plex Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scrollbar-color:var(--ink) var(--paper-2)}
@@ -327,4 +327,36 @@ section{position:relative;padding:128px var(--pad) 120px}
   .about blockquote{margin-top:18px;padding-top:16px;font-size:clamp(18px,2.5vh,22px)}
   .about .pics{grid-column:8/13;grid-row:2;display:flex}
   .about .sim.hmi{aspect-ratio:auto;width:100%;min-height:420px}
+}
+
+/* type: Be Vietnam Pro for text (built for Vietnamese), Barlow Condensed for the condensed display voice; both carry full Vietnamese */
+.hero h1,.svc h2,.sh h2,.about h2,.contact h2,.tblock b,.svc b,.pl b,.gemgrid li,.proto .r h3,.printro h3,.caps h3,.partner .models h3,.chips span,.card strong,.eqhud b{font-family:var(--head)}
+.hero h1,.sh h2,.about h2,.contact h2{letter-spacing:-.01em}
+/* hero breathing room with the wider text face */
+.hero .lead{width:min(580px,50%);font-size:16px}
+.hero h1{font-size:clamp(46px,min(8.8vw,12vh),134px)}
+:lang(vi) .hero h1{font-size:clamp(42px,min(7.4vw,9.8vh),112px)}
+@media (max-width:900px){.hero .lead{width:100%;font-size:15px}.hero h1{font-size:clamp(40px,min(11.6vw,8vh),96px)}}
+@media (min-width:901px) and (max-height:760px){
+  .hero{padding-top:84px}
+  .hero .kick{margin-bottom:10px}
+  .hero h1{font-size:clamp(44px,min(8.8vw,10.2vh),134px)}
+  :lang(vi) .hero h1{font-size:clamp(40px,min(7.4vw,8.4vh),112px)}
+  .hero .lead{margin-top:18px}
+  .hero .lead p{margin-bottom:16px}
+  .hero .meta{margin-top:14px}
+}
+@media (min-width:901px) and (max-height:760px){
+  .hero{padding-top:84px}
+  .hero .kick{margin-bottom:10px}
+  .hero h1{font-size:clamp(44px,min(8.8vw,10.2vh),134px)}
+  :lang(vi) .hero h1{font-size:clamp(40px,min(7.4vw,8.4vh),112px)}
+  .hero .lead{margin-top:18px}
+  .hero .lead p{margin-bottom:16px}
+  .hero .meta{margin-top:14px}
+}
+@media (min-width:901px) and (max-height:660px){
+  .hero h1{font-size:clamp(40px,min(8.8vw,9.4vh),134px)}
+  :lang(vi) .hero h1{font-size:clamp(36px,min(7.4vw,7.6vh),112px)}
+  .hero .lead{font-size:15px}
 }
