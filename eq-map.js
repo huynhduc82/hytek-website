@@ -59,9 +59,9 @@
     const root = opts.root || '', RM = document.documentElement.classList.contains('rm');
     const t = k => (w.HY_T ? w.HY_T(k, enT(k)) : enT(k));
     const parts = D().parts;
-    let sel = opts.select || 'process-chamber', paused = false, view3d = null;
+    let sel = opts.select || 'process-chamber', paused = false, view3d = null, setPause = null;
     el.classList.add('mp');
-    el.innerHTML = `<div class="mp-stage"><div class="mp-gl" role="img"></div><p class="mp-hint"></p></div>
+    el.innerHTML = `<h2 class="sr-only mp-h"></h2><div class="mp-stage"><div class="mp-gl" role="img"></div><p class="mp-hint"></p></div>
 <div class="mp-side"><p class="mp-lbl"></p><ul class="mp-list"></ul><div class="mp-info" aria-live="polite"></div><p class="mp-note"></p></div>`;
     const $ = s => el.querySelector(s), list = $('.mp-list'), info = $('.mp-info'), stage = $('.mp-stage');
 
@@ -74,7 +74,9 @@
     }
     function texts() {
       list.innerHTML = renderPartList(parts, t);
+      $('.mp-h').textContent = t('eq.lbl.map');
       $('.mp-lbl').textContent = t('eq.lbl.parts');
+      if (setPause) setPause();
       $('.mp-note').textContent = t('eq.note');
       $('.mp-hint').textContent = t('eq.lbl.pick');
       $('.mp-gl').setAttribute('aria-label', t('eq.note'));
@@ -86,8 +88,8 @@
 
     if (!RM) {
       const pb = document.createElement('button'); pb.type = 'button'; pb.className = 'simpause';
-      const set = () => { pb.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation'); pb.innerHTML = paused ? PLAY : PAUSE; };
-      set(); pb.onclick = () => { paused = !paused; set(); }; stage.appendChild(pb);
+      setPause = () => { pb.setAttribute('aria-label', paused ? t('eq.lbl.play') : t('eq.lbl.pause')); pb.innerHTML = paused ? PLAY : PAUSE; };
+      setPause(); pb.onclick = () => { paused = !paused; setPause(); }; stage.appendChild(pb);
     }
     // build the 3D scene only when the map comes near the screen (the landing page already runs two other scenes)
     let started = false;

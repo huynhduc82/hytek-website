@@ -22,7 +22,7 @@
   let state = 'NOT_CONNECTED';
   const log = el.querySelector('.hs-log');
   function show() {
-    el.querySelectorAll('[data-state]').forEach(n => n.classList.toggle('on', n.dataset.state === state));
+    el.querySelectorAll('[data-state]').forEach(n => { const on = n.dataset.state === state; n.classList.toggle('on', on); if (on) n.setAttribute('aria-current', 'step'); else n.removeAttribute('aria-current'); });
     el.querySelectorAll('button[data-ev]').forEach(b => { b.disabled = b.dataset.ev !== 'reset' && next(state, b.dataset.ev).log === 'ignored'; });
   }
   el.addEventListener('click', e => {

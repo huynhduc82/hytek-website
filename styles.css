@@ -35,7 +35,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;j
 .logo .mark{width:var(--M);height:var(--M);display:block;flex:none}
 .logo .wm{display:flex;flex-direction:column;height:var(--M);line-height:1}
 .logo .wm b{margin-top:calc(var(--M)*.1);font:800 calc(var(--M)*.56)/1 var(--display);font-stretch:112%;letter-spacing:.02em;color:#0b243b}
-.logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(9.5px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#5e7184}
+.logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(9.5px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#4a5c6e}
 header nav{display:flex;gap:28px;font:600 14px var(--display)}
 header nav a{text-decoration:none;padding:6px 0}
 header nav a.cta{color:var(--sig-ink)}
@@ -258,9 +258,9 @@ section{position:relative;padding:128px var(--pad) 120px}
 .eqhud b{font:700 20px var(--display);font-stretch:85%}
 .eqhud span{font:500 12px var(--data);color:var(--sig-ink)}
 .eqhint{position:absolute;left:16px;bottom:12px;z-index:2;display:flex;align-items:center;gap:6px;font:600 12px var(--display);color:var(--mute);pointer-events:none}
-.eqlbl{position:absolute;z-index:2;transform:translate(-50%,-100%);font:600 12px var(--data);color:var(--ink);background:rgba(255,255,255,.85);padding:1px 5px;border:1px solid var(--rule);pointer-events:none;white-space:nowrap}
+.eqlbl{position:absolute;z-index:2;transform:translate(-50%,-100%);font:600 12px var(--data);color:var(--ink);background:#fff;padding:1px 5px;border:1px solid var(--rule);pointer-events:none;white-space:nowrap}
 .eqlbl.on{color:#fff;background:var(--sig);border-color:var(--sig)}
-.eqlbl.opt{color:var(--mute);border-style:dashed}.eqlbl.opt.on{color:#fff}
+.eqlbl.opt{color:var(--ink-2);border-style:dashed}.eqlbl.opt.on{color:#fff}
 .chambers{position:relative;z-index:1;margin-top:56px}
 .chambers h3{margin:0 0 14px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}

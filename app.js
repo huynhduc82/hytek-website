@@ -140,7 +140,7 @@ function frame(){
   setStep(step);
   // mechanics that show what each service drives
   const s=step;
-  spin+=(((s===4||s===5)?.55:.04)-spin)*.03;blades.rotation.y+=RM?0:spin;
+  spin+=(((s===4||s===5)?.55:0)-spin)*.03;blades.rotation.y+=RM?0:spin;
   const liftT=(s===2)?.16*(.5-.5*Math.cos(t*2.2)):0;lift+=(liftT-lift)*.1;
   if(s===2&&!RM)chuckTop.rotation.y+=.012;
   gate.position.y=(s===0||s===3)&&!RM?.13*Math.sin(t*2.4):gate.position.y*.9;
