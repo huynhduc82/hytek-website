@@ -23,4 +23,19 @@ test('pdf and webp are served as static files', () => {
   assert.equal(route('/tools/cheat-sheets/modbus.pdf'), 'tools/cheat-sheets/modbus.pdf');
   assert.equal(route('/og/share.webp'), 'og/share.webp');
 });
-test('unknown paths still land on the home page', () => assert.equal(route('/old/page'), 'index.html'));
+test('folder URLs without a trailing slash get the slash-adding page, not a broken home page', () => {
+  for (const u of ['/about', '/protocols/secs-gem', '/tools', '/old/page']) assert.equal(route(u), 'slash.html', u);
+});
+test('slash.html adds the slash for known folders and sends anything else home', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'slash.html'), 'utf8');
+  const js = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  const go = (pathname, search = '', hash = '') => {
+    let to = null;
+    new Function('location', js)({ pathname, search, hash, origin: 'https://x', replace: u => { to = u; } });
+    return to;
+  };
+  assert.equal(go('/protocols/secs-gem', '?lang=vi', '#a'), '/protocols/secs-gem/?lang=vi#a');
+  assert.equal(go('/about'), '/about/');
+  assert.equal(go('/old/page'), 'https://x/');
+});
+test('other unknown files still land on the home page', () => assert.equal(route('/old/page.php'), 'index.html'));

@@ -16,6 +16,11 @@ handlers:
   upload: (.*\.(html|gif|png|jpg|jpeg|svg|css|js|ico|woff|woff2|ttf|pdf|webp))$
   secure: always
 
+- url: /([^.]*)
+  static_files: slash.html
+  upload: slash.html
+  secure: always
+
 - url: /(.*)
   static_files: index.html
   upload: index.html

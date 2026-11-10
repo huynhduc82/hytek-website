@@ -110,6 +110,7 @@
     const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(5, 9, 6); scene.add(sun);
     const cam = new THREE.PerspectiveCamera(30, W() / H(), .1, 200);
     const controls = new OrbitControls(cam, r.domElement);
+    r.domElement.style.touchAction = 'pan-y'; // OrbitControls sets 'none'; keep vertical swipes scrolling the page
     Object.assign(controls, { enableZoom: false, enablePan: false, enableDamping: !o.RM, dampingFactor: .08, minPolarAngle: .35, maxPolarAngle: 1.3 });
 
     // high-capacity cluster: 2 loadlocks, 6 process chambers, robot, plus the parts around it

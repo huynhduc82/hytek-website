@@ -50,3 +50,11 @@ test('bad input fails with a readable error', () => {
   assert.throws(() => S.decodeMessage(h('00 00 81')), /truncated/);
   assert.throws(() => S.decodeMessage(h('00 00 81 0D 00 00 00 00 00 07 01 00 41')), /extra bytes/);
 });
+
+test('auto mode: a truncated capture is diagnosed as a length-prefix mismatch', () => {
+  const full = '00 00 00 30 00 01 86 0B 00 00 00 00 00 02 01 03 B1 04 00 00 00 01 B1 04 00 00 03 E9 01 01 01 02 B1 04 00 00 00 01 01 02 41 04 49 44 4C 45 91 04 41 B4 00 00';
+  const cut = full.split(' ').slice(0, -6).join(' ');
+  assert.throws(() => S.decodeMessage(h(cut)), /length prefix says 48, data has 42/);
+  assert.throws(() => S.decodeMessage(h('00 00 00 0E 00 00 81 0D 00 00 00 00 00 07 01 05')), /length prefix says 14/);
+  assert.equal(S.decodeMessage(h('00 00 81 01 00 00 00 00 00 01')).header.fn, 1);   // header-only still decodes
+});

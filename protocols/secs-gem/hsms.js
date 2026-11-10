@@ -5,7 +5,7 @@
   const STATES = ['NOT_CONNECTED', 'NOT_SELECTED', 'SELECTED'];
   const T = {
     NOT_CONNECTED: { connect: ['NOT_SELECTED', 'TCP connected · T7 started'] },
-    NOT_SELECTED: { select: ['SELECTED', 'Select.req / Select.rsp'], t7: ['NOT_CONNECTED', 'T7 timeout · TCP closed'], separate: ['NOT_CONNECTED', 'Separate.req'] },
+    NOT_SELECTED: { select: ['SELECTED', 'Select.req / Select.rsp'], linktest: ['NOT_SELECTED', 'Linktest.req / Linktest.rsp'], t7: ['NOT_CONNECTED', 'T7 timeout · TCP closed'], separate: ['NOT_CONNECTED', 'Separate.req'] },
     SELECTED: { linktest: ['SELECTED', 'Linktest.req / Linktest.rsp'], deselect: ['NOT_SELECTED', 'Deselect.req / Deselect.rsp'], separate: ['NOT_CONNECTED', 'Separate.req'] }
   };
   function next(state, event) {

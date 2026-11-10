@@ -82,8 +82,10 @@
     let length = null, at = 0;
     if (mode !== 'no' && bytes.length >= 4) {
       const n = ((bytes[0] << 24) >>> 0) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+      // a real prefix (< 16 MiB) starts 00 00 00; read as a bare header those bytes would be session 0, stream 0, W=0
+      const looksLikePrefix = bytes[0] === 0 && bytes[1] === 0 && bytes[2] === 0 && n >= 10;
       if (n === bytes.length - 4 && n >= 10) { length = n; at = 4; }
-      else if (mode === 'yes') throw new Error(`length prefix says ${n}, data has ${bytes.length - 4}`);
+      else if (mode === 'yes' || looksLikePrefix) throw new Error(`length prefix says ${n}, data has ${bytes.length - 4}`);
     } else if (mode === 'yes') need(bytes, 4);
     const header = decodeHeader(bytes, at);
     at += 10;

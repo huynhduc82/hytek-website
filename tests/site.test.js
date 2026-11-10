@@ -13,7 +13,8 @@ function walk(dir, out = []) {
   return out;
 }
 const files = walk(ROOT);
-const pages = files.filter(f => f.endsWith('.html'));
+// slash.html is an http-only helper (App Engine adds the trailing slash), not a site page
+const pages = files.filter(f => f.endsWith('.html') && path.basename(f) !== 'slash.html');
 const rel = f => path.relative(ROOT, f).split(path.sep).join('/');
 const read = f => fs.readFileSync(f, 'utf8');
 
@@ -94,4 +95,11 @@ test('public-safe: no internal notes in shipped files', () => {
 test('old anchors are redirected by site.js', () => {
   for (const id of ['stage', 'about', 'equipment', 'services', 'protocols', 'gem', 'simulator', 'partnership', 'contact'])
     assert.ok(UI.OLD.includes(id), id);
+});
+
+test('every page loads the current styles.css and hub.css (same cache key)', () => {
+  for (const f of pages) {
+    const all = [...read(f).matchAll(/href="((?:\.\.\/)*(?:styles|hub)\.css\?v=\d+)"/g)].map(m => m[1].replace(/^(\.\.\/)+/, ''));
+    assert.deepEqual(all.sort(), ['hub.css?v=6', 'styles.css?v=6'], rel(f));
+  }
 });
