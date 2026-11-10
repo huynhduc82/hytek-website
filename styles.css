@@ -30,10 +30,12 @@ svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.6;stroke
 header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;justify-content:space-between;align-items:center;padding:0 var(--pad);
   background:rgba(244,247,249,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
 .logo{font:900 22px var(--display);font-stretch:118%;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo .mark{width:42px;height:42px;display:block;flex:none}
-.logo .wm{display:flex;flex-direction:column;line-height:1}
-.logo .wm b{font:700 25px Arial,Helvetica,sans-serif;letter-spacing:.03em;color:#0b243b}
-.logo .wm small{margin-top:5px;font:700 11px Arial,Helvetica,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#5e7184}
+/* logo: proportions taken from logo.svg (mark 100u; gap 24u; wordmark 50u, baseline at 52u; tagline baseline at 78u, tracking .2em) */
+.logo{--M:46px;gap:calc(var(--M)*.24)}
+.logo .mark{width:var(--M);height:var(--M);display:block;flex:none}
+.logo .wm{display:flex;flex-direction:column;height:var(--M);line-height:1}
+.logo .wm b{margin-top:calc(var(--M)*.1);font:800 calc(var(--M)*.56)/1 var(--display);font-stretch:112%;letter-spacing:.02em;color:#0b243b}
+.logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(9.5px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#5e7184}
 header nav{display:flex;gap:28px;font:600 14px var(--display)}
 header nav a{text-decoration:none;padding:6px 0}
 header nav a.cta{color:var(--sig-ink)}
@@ -133,7 +135,7 @@ section{position:relative;padding:128px var(--pad) 120px}
 .partner .models h3{margin:0 0 8px;font:700 22px/1.1 var(--display);font-stretch:82%}
 .partner .models p{margin:0;font-size:15px;color:var(--mute)}
 @media (max-width:900px){
-  .logo .mark{width:38px;height:38px}.logo .wm b{font-size:23px}.logo .wm small{font-size:10px;letter-spacing:.1em}
+  .logo{--M:42px}
   .about .grid{display:block}.about .pics{margin-top:36px}
   .strip{grid-template-columns:1fr;gap:12px}
   .proto .r{grid-template-columns:1fr;gap:4px}
