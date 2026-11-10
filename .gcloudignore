@@ -20,3 +20,5 @@
 .impeccable/
 .claude/
 CLAUDE.md
+tests/
+README.internal.md
