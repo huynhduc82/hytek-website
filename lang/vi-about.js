@@ -98,4 +98,6 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'ct.btn':'Liên hệ đội ngũ kỹ sư',
   'brand.tag':'Phần mềm kỹ thuật cho hệ thống màng mỏng tiên tiến'
 
+,
+  'nav.hub':'Kho kiến thức'
 });

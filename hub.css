@@ -141,3 +141,10 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 /* audit 2026-11-10: balanced last lines, screen-reader-only headings */
 p,li,dd,blockquote{text-wrap:pretty}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* the landing page's longer menu (8 items) folds into the Menu button before it would wrap */
+@media (min-width:901px) and (max-width:1279px){
+  header.long nav{display:none}
+  header.long nav.open{display:flex;position:fixed;inset:64px 0 0;flex-direction:column;gap:0;background:var(--paper);padding:20px var(--pad)}
+  header.long nav.open a{font:800 40px/1 var(--head);text-transform:uppercase;padding:14px 0;border-bottom:1px solid var(--rule)}
+  header.long .menu{display:block}
+}

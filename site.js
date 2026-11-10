@@ -8,12 +8,13 @@
     'hub.nav.learn': 'Learn', 'hub.nav.contact': 'Contact'
   };
 
-  function renderHeader(root, current) {
+  // custom: a page's own menu links (the landing page keeps its original in-page menu)
+  function renderHeader(root, current, custom) {
     const S = w.HY_SITE;
-    const links = S.sections.map(s => `<a class="ul" href="${root}${s.path}"${s.id === current ? ' aria-current="page"' : ''} data-i18n="${s.key}">${EN[s.key]}</a>`).join('');
-    return `<header>
+    const links = custom != null ? custom : S.sections.map(s => `<a class="ul" href="${root}${s.path}"${s.id === current ? ' aria-current="page"' : ''} data-i18n="${s.key}">${EN[s.key]}</a>`).join('');
+    return `<header${custom != null ? ' class="long"' : ''}>
   <a class="logo" href="${root}index.html" aria-label="HYTEK home">${LOGO}</a>
-  <nav id="nav">${links}<a class="ul cta" href="mailto:${S.email}" data-i18n="hub.nav.contact">${EN['hub.nav.contact']}</a></nav>
+  <nav id="nav">${links}${custom != null ? '' : `<a class="ul cta" href="mailto:${S.email}" data-i18n="hub.nav.contact">${EN['hub.nav.contact']}</a>`}</nav>
   <div class="hright">
     <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="vi" aria-pressed="false">VI</button></div>
     <button class="menu" type="button" aria-expanded="false" aria-controls="nav" data-i18n="ui.menu">Menu</button>
@@ -37,7 +38,8 @@
 
   const de = document.documentElement, root = de.dataset.root || '';
   const hh = document.getElementById('hy-header'), hf = document.getElementById('hy-footer');
-  if (hh) hh.outerHTML = renderHeader(root, document.body.dataset.section || null);
+  const tpl = document.getElementById('hy-nav');
+  if (hh) hh.outerHTML = renderHeader(root, document.body.dataset.section || null, tpl ? tpl.innerHTML.trim() : null);
   if (hf) hf.outerHTML = renderFooter(root);
 
   const b = document.querySelector('header .menu'), n = document.getElementById('nav');

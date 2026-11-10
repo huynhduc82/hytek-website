@@ -98,10 +98,12 @@ test('the landing page is the original one-page site: old anchors work in place'
     assert.match(html, new RegExp(`id="${id}"`), id);
 });
 
-test('landing page is the original site only: no extra hub block, no duplicate map', () => {
+test('landing page: one menu bar (original anchors + Knowledge hub), no extra hub block', () => {
   const html = read(path.join(ROOT, 'index.html'));
-  assert.doesNotMatch(html, /id="hub"|data-eqmap|class="hubin"/);
-  assert.doesNotMatch(html, /href="#hub"/);
+  assert.doesNotMatch(html, /id="hub"|data-eqmap|class="hubin"|class="subnav"/);
+  const tpl = (html.match(/<template id="hy-nav">([\s\S]*?)<\/template>/) || [])[1] || '';
+  for (const id of ['about', 'equipment', 'services', 'protocols', 'gem', 'simulator', 'contact']) assert.match(tpl, new RegExp(`href="#${id}"`), id);
+  assert.match(tpl, /href="equipment\/index\.html"[^>]*data-i18n="nav\.hub"/);
   assert.ok(!fs.existsSync(path.join(ROOT, 'hub/index.html')));
 });
 
