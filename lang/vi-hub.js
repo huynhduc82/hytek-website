@@ -4,5 +4,6 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'hub.nav.equipment': 'Thiết bị', 'hub.nav.protocols': 'Giao thức', 'hub.nav.tools': 'Công cụ',
   'hub.nav.learn': 'Học', 'hub.nav.about': 'Về HYTEK', 'hub.nav.contact': 'Liên hệ',
   'brand.tag': 'Phần mềm kỹ thuật cho hệ thống màng mỏng tiên tiến',
-  'hub.soon': 'Đang cập nhật'
+  'hub.soon': 'Đang cập nhật',
+  'hub.pg.home': 'HYTEK'
 });

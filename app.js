@@ -1,4 +1,4 @@
-/* HYTEK site script: scroll-driven 3D chamber, GEM/SECS exchange, simulations. */
+/* HYTEK About page script: scroll-driven 3D chamber, simulations. (GEM/SECS exchange: gem-seq.js) */
 (function(){
 'use strict';
 const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
@@ -6,48 +6,14 @@ const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
    Chrome refuses external module scripts on file:// pages. Three.js loads through dynamic import + the importmap. */
 
 
-/* menu */
-(function(){const b=document.querySelector('.menu'),n=document.getElementById('nav');
-  b.onclick=()=>{const o=n.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?T('ui.close','Close'):T('ui.menu','Menu')};
-  n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{n.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent=T('ui.menu','Menu')}));
-  // "Services" jumps to the step where the list is fully visible
-  document.querySelector('a[href="#services"]').addEventListener('click',e=>{if(document.documentElement.classList.contains('rm'))return;e.preventDefault();
+/* "Services" in the About sub-nav jumps to the step where the list is fully visible */
+(function(){const a=document.querySelector('a[href="#services"]');if(!a)return;
+  a.addEventListener('click',e=>{if(document.documentElement.classList.contains('rm'))return;e.preventDefault();
     const s=document.getElementById('stage');scrollTo({top:s.offsetTop+(s.offsetHeight-innerHeight)*.3,behavior:'smooth'})});
 })();
 
 
-/* GEM/SECS message exchange: replays continuously while on screen; pause/play button; static under reduced motion */
-(function(){
-  const svg=document.getElementById('seq'),NS='http://www.w3.org/2000/svg',rm=document.documentElement.classList.contains('rm');
-  const mk=(t,a,p=svg)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
-  const MOB=innerWidth<=900,VW=MOB?400:700,HX=MOB?62:110,EX=MOB?338:590,BW=MOB?118:184,FS=MOB?14:12.5,F='IBM Plex Mono';svg.setAttribute('viewBox',`0 0 ${VW} 520`);
-  [[HX,'FACTORY HOST / MES'],[EX,'EQUIPMENT']].forEach(([x,t])=>{mk('rect',{x:x-BW/2,y:0,width:BW,height:38,fill:'none',stroke:'#f4f7f9','stroke-width':1.5});
-    mk('text',{x,y:24,'text-anchor':'middle',fill:'#f4f7f9','font-family':'Archivo','font-weight':700,'font-size':MOB?13:14}).textContent=MOB?t.replace(' / MES',''):t;
-    mk('line',{x1:x,y1:38,x2:x,y2:512,stroke:'#3a4a5a','stroke-dasharray':'10 4 2 4'})});
-  const M=[[1,'S1F13','Establish Communications'],[0,'S1F14','COMMACK = 0'],[1,'S2F41','Host Command 路 PP-SELECT'],[0,'S2F42','HCACK = 0'],
-           [0,'S6F11','Event 路 PROCESS_START'],[0,'S5F1','Alarm 路 PM3 PRESSURE HIGH'],[1,'S5F2','Alarm Ack'],[0,'S6F11','Event 路 PROCESS_COMPLETE'],[1,'S6F12','Event Ack']];
-  const rows=M.map((m,i)=>{const y=74+i*50,h2e=m[0]===1,x1=h2e?HX:EX,x2=h2e?EX:HX,dir=h2e?1:-1,al=m[1]==='S5F1',col=al?'#f5a524':'#f4f7f9';
-    const g=mk('g',{opacity:0});const L=mk('line',{x1,y1:y,x2:x1,y2:y,stroke:col,'stroke-width':1.5},g);
-    const A=mk('path',{d:`M${x2} ${y} l${-dir*10} -5 v10 Z`,fill:col,opacity:0},g);
-    const T=mk('text',{x:(HX+EX)/2,y:y-9,'text-anchor':'middle','font-family':F,'font-size':FS},g);
-    T.innerHTML=MOB?`<tspan fill="${col}" font-weight="600">${m[1]}</tspan>`:`<tspan fill="${col}" font-weight="600">${m[1]}</tspan><tspan fill="${al?col:'#9fb0c0'}">  ${m[2]}</tspan>`;
-    if(MOB){const d=mk('text',{x:(HX+EX)/2,y:y+18,'text-anchor':'middle','font-family':'Archivo','font-size':13,fill:al?col:'#9fb0c0'},g);d.textContent=m[2]}
-    return {g,L,A,x1,x2}});
-  const per=.55,HOLD=3,FADE=.6,TOTAL=M.length*per+HOLD+FADE;
-  const btn=document.getElementById('gemCtl'),lab=btn.querySelector('span'),use=btn.querySelector('use');
-  let t=0,last=0,on=false,paused=false;
-  function frame(tt){
-    const fade=tt>TOTAL-FADE?1-(tt-(TOTAL-FADE))/FADE:1;
-    rows.forEach((r,i)=>{const p=Math.max(0,Math.min(1,(tt-i*per)/(per*.75))),e=1-Math.pow(1-p,3);
-      r.g.setAttribute('opacity',p>0?fade:0);r.L.setAttribute('x2',r.x1+(r.x2-r.x1)*e);r.A.setAttribute('opacity',p>=1?1:0)});
-  }
-  function setBtn(){lab.textContent=paused?T('gem.play','Play exchange'):T('gem.pause','Pause exchange');use.setAttribute('href',paused?'#play':'#pause')}
-  function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-(last||now))/1000);last=now;
-    if(!on||paused)return;t=(t+dt)%TOTAL;frame(t)}
-  if(rm){frame(M.length*per+.5);btn.hidden=true}
-  else{setBtn();btn.onclick=()=>{paused=!paused;setBtn()};addEventListener('hy:lang',setBtn);
-    new IntersectionObserver(es=>{on=es[0].isIntersecting},{threshold:.2}).observe(svg);requestAnimationFrame(tick)}
-})();
+
 
 
 /* ---------- scroll-driven 3D process chamber ---------- */
@@ -275,7 +241,7 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e鈭
   }
   const sensor=mkS('g',{},svg);mkS('rect',{x:X-30,y:-3,width:W+60,height:6,fill:INK},sensor);mkS('line',{x1:X-30,y1:0,x2:X+W+30,y2:0,stroke:BLUE,'stroke-width':1.5,'stroke-dasharray':'2 3'},sensor);
   const fx=X+W+60;
-  const lab=(y,k)=>{const t=mkS('text',{x:fx,y,fill:'#586676','font-family':'IBM Plex Mono','font-size':12},svg);t.textContent=k;return mkS('text',{x:fx,y:y+24,fill:INK,'font-family':'Archivo','font-size':22,'font-weight':700},svg)};
+  const lab=(y,k)=>{const t=mkS('text',{x:fx,y,fill:'#586676','font-family':'IBM Plex Mono','font-size':12},svg);t.textContent=k;return mkS('text',{x:fx,y:y+24,fill:INK,'font-family':'Be Vietnam Pro','font-size':22,'font-weight':700},svg)};
   const vState=lab(70,'LL-A 路 STATE'),vMap=lab(140,'SLOTS MAPPED'),vW=lab(210,'WAFERS'),vNext=lab(280,'NEXT TRANSFER');
   const total=present.reduce((a,b)=>a+b,0);const order=present.map((p,i)=>p?i:-1).filter(i=>i>=0);
   function draw(c){ // 0..14 s
@@ -317,14 +283,14 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e鈭
     if(!mob){svg.setAttribute('viewBox','0 0 1200 400');box=i=>({x:30+i*420,y:140,w:300,h:120})}
     else{svg.setAttribute('viewBox','0 0 400 620');box=i=>({x:60,y:20+i*230,w:280,h:120})}
     N.forEach(([a,b],i)=>{const r=box(i);mkS('rect',{x:r.x,y:r.y,width:r.w,height:r.h,fill:i===1?INK:'#fff',stroke:INK,'stroke-width':1.6},svg);
-      const t1=mkS('text',{x:r.x+20,y:r.y+52,fill:i===1?'#fff':INK,'font-family':'Archivo','font-size':mob?19:21,'font-weight':700},svg);t1.textContent=a;
+      const t1=mkS('text',{x:r.x+20,y:r.y+52,fill:i===1?'#fff':INK,'font-family':'Be Vietnam Pro','font-size':mob?19:21,'font-weight':700},svg);t1.textContent=a;
       const t2=mkS('text',{x:r.x+20,y:r.y+84,fill:i===1?'#9fb0c0':'#586676','font-family':'IBM Plex Mono','font-size':14},svg);t2.textContent=b});
     F.forEach(([lab,a,b])=>{const A=box(a),B=box(b);let d,lx,ly,anchor='middle';
       if(!mob){const fwd=b>a,y=fwd?A.y+30:A.y+A.h-30,x1=fwd?A.x+A.w:A.x,x2=fwd?B.x:B.x+B.w,cy=fwd?y-90:y+90;
         d=`M${x1} ${y} C ${x1+(x2-x1)*.35} ${cy}, ${x1+(x2-x1)*.65} ${cy}, ${x2} ${y}`;lx=(x1+x2)/2;ly=fwd?y-78:y+92}
       else{const fwd=b>a,x=fwd?152:248,y1=fwd?A.y+A.h:A.y,y2=fwd?B.y:B.y+B.h;d=`M${x} ${y1} L ${x} ${y2}`;lx=fwd?x-12:x+12;ly=(y1+y2)/2-6;anchor=fwd?'end':'start'}
       mkS('path',{d,class:'flow',fill:'none',stroke:INK,'stroke-width':1.3,'stroke-dasharray':'5 5'},svg);
-      const t=mkS('text',{x:lx,y:ly,'text-anchor':anchor,fill:INK,'font-family':'Archivo','font-size':mob?14:17,'font-weight':600},svg);
+      const t=mkS('text',{x:lx,y:ly,'text-anchor':anchor,fill:INK,'font-family':'Be Vietnam Pro','font-size':mob?14:17,'font-weight':600},svg);
       if(!mob)t.textContent=lab;else{const w=lab.split(' '),h=Math.ceil(w.length/2);[w.slice(0,h).join(' '),w.slice(h).join(' ')].forEach((s,k)=>{const sp=mkS('tspan',{x:lx,dy:k?17:0},t);sp.textContent=s})}});
     paths=[...svg.querySelectorAll('path.flow')];dots=paths.map(()=>mkS('circle',{r:6,fill:BLUE},svg));L=paths.map(p=>p.getTotalLength());
   }
@@ -337,7 +303,7 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e鈭
 (function(){
   const svg=document.getElementById('simSwitch');if(!svg)return;
   const INK='#09131f',BLUE='#0b6ac7',MUTE='#586676';let lever,dotA,dotB,pathSim,pathReal,simBox,realBox,lenS,lenR;
-  function txt(x,y,s,o={}){const t=mkS('text',Object.assign({x,y,fill:INK,'font-family':'Archivo','font-size':18,'font-weight':700},o),svg);t.textContent=s;return t}
+  function txt(x,y,s,o={}){const t=mkS('text',Object.assign({x,y,fill:INK,'font-family':'Be Vietnam Pro','font-size':18,'font-weight':700},o),svg);t.textContent=s;return t}
   let G;
   function build(){
     while(svg.firstChild)svg.removeChild(svg.firstChild);

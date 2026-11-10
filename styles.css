@@ -360,3 +360,11 @@ section{position:relative;padding:128px var(--pad) 120px}
   :lang(vi) .hero h1{font-size:clamp(36px,min(7.4vw,7.6vh),112px)}
   .hero .lead{font-size:15px}
 }
+/* About page sub-nav (the old one-page menu): sits after the scroll stage, then sticks under the header */
+.subnav{position:sticky;top:64px;z-index:40;display:flex;gap:28px;padding:0 var(--pad);height:46px;align-items:center;overflow-x:auto;scrollbar-width:none;
+  background:rgba(244,247,249,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule);font:600 14px var(--display);white-space:nowrap}
+.subnav::-webkit-scrollbar{display:none}
+.subnav a{text-decoration:none;padding:12px 0}
+.subnav a.cta{color:var(--sig-ink)}
+body[data-section="about"] main [id]{scroll-margin-top:118px}
+@media (max-width:900px){.subnav{gap:20px;font-size:13px}}
