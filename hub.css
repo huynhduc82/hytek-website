@@ -3,7 +3,7 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 
 .hub{position:relative;max-width:1440px;margin:0 auto;padding:clamp(104px,14vh,140px) var(--pad) 0}
 .crumb{display:flex;gap:10px;font:600 13px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
-.crumb a{color:var(--sig-ink);text-decoration:none}.crumb a:hover{text-decoration:underline}
+.crumb a{color:var(--sig-ink);text-decoration:none}.crumb a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
 .hub-head{padding-bottom:clamp(28px,5vh,48px);border-bottom:1.5px solid var(--ink)}
 .hub h1{margin:0;font:800 clamp(44px,6.4vw,96px)/.92 var(--head);text-transform:uppercase;letter-spacing:-.005em;max-width:16ch}
 :lang(vi) .hub h1{line-height:1.04}
@@ -80,7 +80,9 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 .mp{display:grid;grid-template-columns:minmax(0,7fr) minmax(300px,5fr);gap:0;margin:clamp(28px,4vh,44px) 0;border:1.5px solid var(--ink);background:#fff}
 .mp-stage{position:relative;min-height:clamp(420px,64vh,660px);border-right:1.5px solid var(--ink)}
 .mp-gl{position:absolute;inset:0}
-.mp-gl canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.mp-gl canvas{display:block;width:100%;height:100%;touch-action:pan-y;opacity:0;transition:opacity .45s var(--ease)}
+.mp-stage.ready .mp-gl canvas{opacity:1}
+html.rm .mp-gl canvas{transition:none}
 .mp-hint{position:absolute;left:16px;bottom:12px;margin:0;font:600 13px var(--display);color:var(--mute);pointer-events:none}
 .mp.fail .mp-stage{display:none}
 .mp.fail{grid-template-columns:1fr}
@@ -102,7 +104,8 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 /* SECS/GEM page */
 .slot .sub{margin:0 0 12px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase}
 .slot .sub:not(:first-child){margin-top:34px}
-.stack{list-style:none;margin:0;padding:0;border-top:1.5px solid var(--ink)}
+.stack{list-style:none;margin:0;padding:0} /* the slot rule above already opens the block: no second rule */
+.stack li:first-child{padding-top:0}
 .stack li{padding:14px 0;border-bottom:1px solid var(--rule)}
 .stack b{font:800 26px/1 var(--head);margin-right:10px}
 .stack .std{font:500 13px var(--data);color:var(--mute)}
@@ -141,10 +144,15 @@ header nav a[aria-current="page"]{color:var(--sig-ink);background-size:100% 1.5p
 /* audit 2026-11-10: balanced last lines, screen-reader-only headings */
 p,li,dd,blockquote{text-wrap:pretty}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-/* the landing page's longer menu (8 items) folds into the Menu button before it would wrap */
-@media (min-width:901px) and (max-width:1279px){
+/* the landing page's longer menu (7 links) folds into the Menu button before it would crowd Contact */
+@media (min-width:901px) and (max-width:1439px){
   header.long nav{display:none}
-  header.long nav.open{display:flex;position:fixed;inset:64px 0 0;flex-direction:column;gap:0;background:var(--paper);padding:20px var(--pad)}
+  header.long nav.open{display:flex;position:fixed;inset:64px 0 0;flex-direction:column;align-items:stretch;gap:0;margin:0;background:var(--paper);padding:20px var(--pad);overflow-y:auto}
   header.long nav.open a{font:800 40px/1 var(--head);text-transform:uppercase;padding:14px 0;border-bottom:1px solid var(--rule)}
+  header.long nav.open a.ext{margin-left:0}header.long nav.open a.ext::before{display:none}
   header.long .menu{display:block}
+}
+@media (pointer:coarse){
+  .mp-part,.chip,.seg label{min-height:44px}
+  .crumb a{padding:14px 0;margin:-14px 0}
 }

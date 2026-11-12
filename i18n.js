@@ -6,7 +6,7 @@
 'use strict';
 const VI=window.HY_VI||{};
 
-const KEY='hytek-lang',en={};
+const KEY='hytek-lang',en={},enA={};
 let lang='en';
 const qp=new URLSearchParams(location.search).get('lang');
 try{const s=(qp==='vi'||qp==='en')?qp:localStorage.getItem(KEY);if(s==='vi'||s==='en')lang=s;else if((navigator.language||'').toLowerCase().startsWith('vi'))lang='vi'}catch(e){}
@@ -20,12 +20,18 @@ function apply(l,announce){
     const k=el.dataset.i18n;if(!(k in en))en[k]=el.innerHTML;
     const v=(l==='vi'&&VI[k]!=null)?VI[k]:en[k];if(el.innerHTML!==v)el.innerHTML=v;
   });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{
+    const k=el.dataset.i18nAria;if(!(k in enA))enA[k]=el.getAttribute('aria-label');
+    el.setAttribute('aria-label',(l==='vi'&&VI[k]!=null)?VI[k]:enA[k]);
+  });
   document.documentElement.lang=l;
   if(desc){const k=desc.dataset.i18nContent;desc.content=(l==='vi'&&VI[k]!=null)?VI[k]:en[k]}
-  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
+  // the switch offers the other language, named in that language
+  document.querySelectorAll('button.lang').forEach(b=>{const o=l==='vi'?'en':'vi',name=o==='vi'?'Tiếng Việt':'English';
+    b.dataset.lang=o;b.title=name;const s=b.querySelector('span');if(s){s.textContent=name;s.lang=o}});
   try{localStorage.setItem(KEY,l)}catch(e){}
   if(announce)dispatchEvent(new CustomEvent('hy:lang',{detail:l}));
 }
 apply(lang,false);
-document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.lang!==window.HY_LANG)apply(b.dataset.lang,true)}));
+document.querySelectorAll('button.lang').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.lang!==window.HY_LANG)apply(b.dataset.lang,true)}));
 })();

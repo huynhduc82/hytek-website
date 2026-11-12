@@ -13,7 +13,10 @@ function HY_EQKIT(THREE){
     frame:new THREE.MeshStandardMaterial({color:0xc4ccd3,metalness:.3,roughness:.7}),
     copper:new THREE.MeshStandardMaterial({color:0xd08a4c,metalness:.8,roughness:.3}),
     glass:new THREE.MeshPhysicalMaterial({color:0xcfe3f5,metalness:0,roughness:.05,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}),
-    ghost:new THREE.MeshStandardMaterial({color:0xd9dde1,metalness:.5,roughness:.4,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}),
+    ghost:new THREE.MeshStandardMaterial({color:0xd9dde1,metalness:.5,roughness:.4,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}),
+    // see-through walls and lids: chambers, loadlocks and the transfer chamber show the wafer, chuck and robot inside
+    shell:new THREE.MeshStandardMaterial({color:0xd9dde1,metalness:.55,roughness:.35,transparent:true,opacity:.26,depthWrite:false,side:THREE.DoubleSide}),
+    shellD:new THREE.MeshStandardMaterial({color:0x9aa1a8,metalness:.5,roughness:.4,transparent:true,opacity:.3,depthWrite:false,side:THREE.DoubleSide}),
     wafer:new THREE.MeshPhysicalMaterial({color:0x7f97c9,metalness:.55,roughness:.12,iridescence:1,iridescenceIOR:1.7,clearcoat:1}),
     arm:new THREE.MeshStandardMaterial({color:0xe8ecef,metalness:.5,roughness:.3}),
   };
@@ -24,12 +27,12 @@ function HY_EQKIT(THREE){
 
   /* ---------- builders ---------- */
   function processChamber(opt,hinged){ // vertical PVD/RIE-style process module, cutaway facing +x (outward)
-    const g=new THREE.Group(),body=opt?M.ghost:M.steel;
+    const g=new THREE.Group(),body=opt?M.ghost:M.shell;
     g.add(mesh(new THREE.BoxGeometry(1.1,.3,1.1),M.frame,[0,.15,0]));
     g.add(mesh(new THREE.CylinderGeometry(.62,.62,.62,56,1,true,Math.PI*.8,Math.PI*1.4),body,[0,.62,0]));
     [.31,.93].forEach(y=>g.add(mesh(new THREE.TorusGeometry(.62,.03,8,56),M.steelD,[0,y,0],[Math.PI/2,0,0])));
-    if(!hinged){g.add(mesh(new THREE.CylinderGeometry(.66,.66,.08,56),opt?M.ghost:M.steel,[0,.97,0]));
-    g.add(mesh(new THREE.CylinderGeometry(.28,.28,.22,32),M.steelD,[0,1.12,0]));
+    if(!hinged){g.add(mesh(new THREE.CylinderGeometry(.66,.66,.08,56),body,[0,.97,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.28,.28,.22,32),opt?M.ghost:M.shellD,[0,1.12,0]));
     g.add(mesh(new THREE.TorusGeometry(.33,.03,8,40),M.copper,[0,1.06,0],[Math.PI/2,0,0]));}
     g.add(mesh(new THREE.CylinderGeometry(.42,.45,.1,48),M.steelD,[0,.42,0]));
     g.add(mesh(new THREE.CylinderGeometry(.22,.22,.25,32),M.dark,[0,.12,.62]));
@@ -40,7 +43,7 @@ function HY_EQKIT(THREE){
   function ionBeamChamber(){ // horizontal IBE/IBD chamber, ion source on the far end, open on top
     const g=new THREE.Group();
     g.add(mesh(new THREE.BoxGeometry(1.5,.3,1.0),M.frame,[.15,.15,0]));
-    g.add(mesh(new THREE.CylinderGeometry(.55,.55,1.2,56,1,true,Math.PI*.65,Math.PI*1.7),M.steel,[.15,.82,0],[0,0,Math.PI/2]));
+    g.add(mesh(new THREE.CylinderGeometry(.55,.55,1.2,56,1,true,Math.PI*.65,Math.PI*1.7),M.shell,[.15,.82,0],[0,0,Math.PI/2]));
     [-.45,.75].forEach(x=>g.add(mesh(new THREE.TorusGeometry(.55,.03,8,56),M.steelD,[x,.82,0],[0,Math.PI/2,0])));
     g.add(mesh(new THREE.CylinderGeometry(.34,.34,.38,40),M.steelD,[.95,.82,0],[0,0,Math.PI/2]));
     g.add(mesh(new THREE.CylinderGeometry(.36,.36,.06,40),M.blue,[.8,.82,0],[0,0,Math.PI/2]));
@@ -54,7 +57,7 @@ function HY_EQKIT(THREE){
   function loadlock(){
     const g=new THREE.Group();
     g.add(mesh(new THREE.BoxGeometry(.75,.3,.75),M.frame,[0,.15,0]));
-    g.add(mesh(new THREE.BoxGeometry(.7,.5,.66),M.steel,[0,.55,0]));
+    g.add(mesh(new THREE.BoxGeometry(.7,.5,.66),M.shell,[0,.55,0]));
     g.add(mesh(new THREE.BoxGeometry(.06,.36,.5),M.black,[.37,.55,0]));
     const lid=mesh(new THREE.BoxGeometry(.6,.02,.56),M.glass,[0,.81,0]);lid.userData.noEdge=true;g.add(lid);
     for(let i=0;i<4;i++)g.add(mesh(new THREE.BoxGeometry(.5,.01,.04),M.steelD,[0,.36+i*.05,-.24]));
@@ -69,12 +72,16 @@ function HY_EQKIT(THREE){
     return {g,wafer:new THREE.Vector3(0,.92,0),glow:null,top:1.1};
   }
   function transferChamber(n,apothem,vOff){
-    const R=apothem/Math.cos(Math.PI/n),shape=new THREE.Shape();
-    for(let k=0;k<=n;k++){const a=Math.PI/2+(k+vOff)*2*Math.PI/n,x=R*Math.cos(a),z=R*Math.sin(a);k?shape.lineTo(x,-z):shape.moveTo(x,-z)}
-    const geo=new THREE.ExtrudeGeometry(shape,{depth:.32,bevelEnabled:false});geo.rotateX(-Math.PI/2);
-    const g=new THREE.Group();g.add(mesh(geo,M.steelD,[0,.3,0]));
+    const poly=(ap,path)=>{const R=ap/Math.cos(Math.PI/n);for(let k=0;k<=n;k++){const a=Math.PI/2+(k+vOff)*2*Math.PI/n,x=R*Math.cos(a),z=R*Math.sin(a);k?path.lineTo(x,-z):path.moveTo(x,-z)}return path};
+    // hollow see-through walls (outline with a hole), so the robot inside shows; the base frame is the floor
+    const shape=poly(apothem,new THREE.Shape()),ring=poly(apothem,new THREE.Shape());ring.holes.push(poly(apothem-.05,new THREE.Path()));
+    const geo=new THREE.ExtrudeGeometry(ring,{depth:.32,bevelEnabled:false});geo.rotateX(-Math.PI/2);
+    const g=new THREE.Group();g.add(mesh(geo,M.shellD,[0,.3,0]));
+    // darker floor plate inside, so the light robot arm and the wafer read against it
+    const flGeo=new THREE.ExtrudeGeometry(poly(apothem-.05,new THREE.Shape()),{depth:.01,bevelEnabled:false});flGeo.rotateX(-Math.PI/2);
+    const fl=mesh(flGeo,M.steelD,[0,.3,0]);fl.userData.noEdge=true;g.add(fl);
     const lidGeo=new THREE.ExtrudeGeometry(shape,{depth:.02,bevelEnabled:false});lidGeo.rotateX(-Math.PI/2);
-    const lid=mesh(lidGeo,M.glass,[0,.64,0]);lid.userData.noEdge=true;g.add(lid);
+    const lid=mesh(lidGeo,M.glass,[0,.64,0]);lid.userData.noEdge=true;lid.userData.pickThrough=true;g.add(lid);
     const base=new THREE.ExtrudeGeometry(shape,{depth:.3,bevelEnabled:false});base.rotateX(-Math.PI/2);g.add(mesh(base,M.frame,[0,0,0]));
     return g;
   }
@@ -119,7 +126,31 @@ function HY_EQKIT(THREE){
     const h=hostCabinet();h.position.set(T.host[0],0,T.host[1]);h.rotation.y=T.host[2];out.push({id:'host-link',g:h});
     return out;
   }
-  return {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot,dressCluster};
+  /* ---------- selection look ---------- */
+  // tintable(group): gives the group its own material copies; set(2) selected, set(1) hover, set(0) as built, set(0, true) faded context
+  const BLUE=new THREE.Color(C.blue),PAPER=new THREE.Color(0xf4f7f9);
+  function tintable(group){
+    const items=[];
+    group.traverse(o=>{if(!o.isMesh||o.material.isMeshBasicMaterial)return;
+      o.material=o.material.clone();o.material.userData.tintClone=true;items.push({m:o.material,c:o.material.color.clone(),op:o.material.opacity})});
+    return {set(level,dim){items.forEach(({m,c,op})=>{
+      m.color.copy(c);
+      if(level){m.color.lerp(BLUE,level===2?(m.transparent?.55:.72):.22);if(m.emissive){m.emissive.copy(BLUE);m.emissiveIntensity=level===2?.42:.1}
+        m.opacity=m.transparent?Math.min(.66,op*(level===2?2.4:1.5)):op}
+      else{if(m.emissive)m.emissiveIntensity=0;m.opacity=m.transparent&&dim?op*.6:op;if(dim)m.color.lerp(PAPER,.55)}
+    })}};
+  }
+  // marker(obj): a blue ring on the floor under obj. m.userData.show(f, pulse): f 0..1 fades it, pulse 0..1 breathes the ring
+  function marker(obj){
+    const b=new THREE.Box3().setFromObject(obj),c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3()),r=Math.max(s.x,s.z)/2+.1;
+    const g=new THREE.Group(),mat=o=>new THREE.MeshBasicMaterial({color:C.blue,transparent:true,opacity:o,depthWrite:false,side:THREE.DoubleSide});
+    const ring=new THREE.Mesh(new THREE.RingGeometry(r,r+.04,72),mat(.95)),disc=new THREE.Mesh(new THREE.CircleGeometry(r,72),mat(.1));
+    [ring,disc].forEach(m=>{m.rotation.x=-Math.PI/2;m.userData.noEdge=true;g.add(m)});
+    g.position.set(c.x,b.min.y+.014,c.z);g.visible=false;
+    g.userData.show=(f,p=0)=>{g.visible=f>.01;ring.material.opacity=.95*f*(1-.35*p);disc.material.opacity=.1*f;ring.scale.setScalar(1+.05*p)};
+    return g;
+  }
+  return {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot,dressCluster,tintable,marker};
 }
 /* station layout for cluster tools: angle a (x=cos a, z=sin a), kind, name */
 function layoutCluster(cfg){

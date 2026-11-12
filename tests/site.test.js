@@ -57,15 +57,40 @@ test('script order: lang → site-map → site → i18n → page scripts, never 
   }
 });
 
+// First paint must already be the finished page: deferred shell scripts (header, language, widgets) are
+// render-blocking, the fonts are embedded (on file:// Chrome re-fetches web fonts for every page and paints a fallback
+// face first), and transitions stay off until load so the language buttons don't fade from EN to VI on each page.
+// Never hide the body instead: on file:// Chrome doesn't keep the old page on screen, so a hidden body flashes blank.
+test('every page paints finished on its first frame', () => {
+  const css = read(path.join(ROOT, 'styles.css'));
+  assert.match(css, /html\.hy-boot \*[^{]*\{transition:none!important\}/);
+  assert.match(css, /scrollbar-gutter:stable/);
+  assert.doesNotMatch(css, /html\.[\w-]+ body\{visibility:hidden\}/);
+  const fonts = read(path.join(ROOT, 'fonts.css'));
+  for (const fam of ['Be Vietnam Pro', 'Barlow Condensed', 'IBM Plex Mono']) assert.ok(fonts.includes(`font-family:'${fam}'`), fam);
+  assert.doesNotMatch(fonts, /url\((?!data:)/, 'fonts.css must embed its fonts');
+  for (const f of pages) {
+    const html = read(f), head = html.slice(0, html.indexOf('</head>'));
+    assert.doesNotMatch(html, /fonts\.googleapis/, `${rel(f)}: web fonts come from fonts.css`);
+    const sheets = attrs(head, /<link rel="stylesheet" href="([^"]+)"/g).map(s => s.replace(/^(\.\.\/)+/, '').split('?')[0]);
+    assert.equal(sheets[0], 'fonts.css', rel(f));
+    for (const tag of head.match(/<script defer[^>]*>/g)) assert.match(tag, /blocking="render"/, `${rel(f)}: ${tag}`);
+    const inline = head.match(/<script>([^<]*hy-boot[^<]*)<\/script>/);
+    assert.ok(inline && head.indexOf(inline[0]) < head.search(/<script defer/), rel(f));
+  }
+});
+
 test('every data-i18n key has VI', () => {
-  const shellKeys = attrs(UI.renderHeader('', null) + UI.renderFooter(''), /data-i18n="([^"]+)"/g);
+  const shellKeys = attrs(UI.renderHeader('', null) + UI.renderFooter(''), /data-i18n(?:-aria)?="([^"]+)"/g);
   for (const f of pages) {
     const html = read(f), ctx = { window: {} };
     vm.createContext(ctx);
     for (const s of localScripts(html).filter(x => x.replace(/^(\.\.\/)+/, '').startsWith('lang/')))
       vm.runInContext(read(path.join(path.dirname(f), s)), ctx);
     const VI = ctx.window.HY_VI || {};
-    const keys = [...attrs(html, /data-i18n(?:-content)?="([^"]+)"/g), ...(html.includes('id="hy-header"') ? shellKeys : [])];
+    // page scripts' own strings: T('key', 'English')
+    const scriptKeys = localScripts(html).filter(x => !/lang\//.test(x)).flatMap(s => attrs(read(path.join(path.dirname(f), s)), /\bT\('([a-z][\w.-]*)'/g));
+    const keys = [...attrs(html, /data-i18n(?:-content|-aria)?="([^"]+)"/g), ...scriptKeys, ...(html.includes('id="hy-header"') ? shellKeys : [])];
     const missing = [...new Set(keys)].filter(k => VI[k] == null);
     assert.deepEqual(missing, [], rel(f));
   }
@@ -86,7 +111,7 @@ test('no photos: no <img> tags', () => {
 
 test('public-safe: no internal notes in shipped files', () => {
   for (const f of files.filter(f => /\.(html|js|css)$/.test(f))) {
-    const s = read(f);
+    const s = read(f).replace(/url\(data:[^)]*\)/g, ''); // embedded font bytes are not text
     assert.doesNotMatch(s, /TODO|provisional|chém|\bowner\b/i, rel(f));
     assert.doesNotMatch(s, /\bNDA\b/, rel(f));
   }
@@ -105,11 +130,45 @@ test('landing page: one menu bar (original anchors + Knowledge hub), no extra hu
   for (const id of ['about', 'equipment', 'services', 'protocols', 'gem', 'simulator', 'contact']) assert.match(tpl, new RegExp(`href="#${id}"`), id);
   assert.match(tpl, /href="equipment\/index\.html"[^>]*data-i18n="nav\.hub"/);
   assert.ok(!fs.existsSync(path.join(ROOT, 'hub/index.html')));
+  // menu order = page order, so a click never runs backwards past what the visitor just read
+  const ids = attrs(tpl, /href="#([^"]+)"/g), at = id => html.indexOf(`id="${id}"`);
+  assert.deepEqual(ids, [...ids].sort((a, b) => at(a) - at(b)));
+  assert.match(html, /<div id="stage" data-scroll-skip>/, 'menu jumps skip the scroll-driven chamber');
 });
 
 test('every page loads the current styles.css and hub.css (same cache key)', () => {
   for (const f of pages) {
     const all = [...read(f).matchAll(/href="((?:\.\.\/)*(?:styles|hub)\.css\?v=\d+)"/g)].map(m => m[1].replace(/^(\.\.\/)+/, ''));
-    assert.deepEqual(all.sort(), ['hub.css?v=6', 'styles.css?v=6'], rel(f));
+    assert.deepEqual(all.sort(), ['hub.css?v=8', 'styles.css?v=8'], rel(f));
   }
+});
+
+// the contact page shows the landing page's contact block (original copy), word for word
+test('contact page and landing contact block stay the same', () => {
+  const block = f => { const h = read(path.join(ROOT, f)); const s = h.indexOf('<div class="cgrid">'); const e = h.indexOf('</section>', s); return h.slice(s, e); };
+  const facts = h => ({ keys: attrs(h, /data-i18n="([^"]+)"/g), hrefs: attrs(h, /href="(mailto:[^"]+)"/g), text: h.replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() });
+  assert.deepEqual(facts(block('contact/index.html')), facts(block('index.html')));
+});
+
+// Scrolling stays smooth: a WebGL frame drawn while its canvas is just off screen stalls Chrome's next swap
+// (measured 250 ms when the services stage scrolled away), and the platform viewer is built while the visitor
+// reads the hero so its setup and shader compile never land mid-scroll.
+test('3D canvases draw only on screen; the platform viewer warms up early', () => {
+  const app = read(path.join(ROOT, 'app.js')), eq = read(path.join(ROOT, 'equip.js'));
+  assert.match(app, /const onScreen=el=>\{[^}]*b\.bottom>0&&b\.top<innerHeight\}/);
+  assert.doesNotMatch(eq, /visible=es\[0\]\.isIntersecting\},\{rootMargin/);
+  assert.match(eq, /requestIdleCallback\(f,/);
+  assert.match(eq, /compileAsync/);
+});
+
+// Desktop wheel scrolling stops on whole screens: every section, and inside the chamber stage the whole chamber
+// plus each of the six service steps (the stops must sit where app.js puts the steps).
+test('landing: wheel stops on whole screens, stage stops match the service steps', () => {
+  const html = read(path.join(ROOT, 'index.html')), css = read(path.join(ROOT, 'styles.css')), app = read(path.join(ROOT, 'app.js'));
+  assert.match(css, /html:has\(#stage\)\{scroll-snap-type:y mandatory\}/);
+  for (const id of ['top', 'about', 'equipment', 'protocols', 'gem', 'simulator', 'partnership', 'contact']) assert.match(css, new RegExp(`#${id}[,{][^}]*scroll-snap-align:start`), id);
+  const [, S0, SL] = app.match(/const S0=([\d.]+),SL=([\d.]+);/).map(Number);
+  const ps = attrs(html, /<i class="snap" style="--p:([\d.]+)"><\/i>/g).map(Number);
+  assert.deepEqual(ps, [0, ...[0, 1, 2, 3, 4, 5].map(i => +(S0 + (i + .5) * SL / 6).toFixed(2))]);
+  assert.match(css, /#contact\{[^}]*height:calc\(100svh - var\(--foot-h/, 'contact and footer share the last screen');
 });

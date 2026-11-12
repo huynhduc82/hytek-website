@@ -1,9 +1,13 @@
 /* Vietnamese for the shared hub shell: menu, footer, templates, page names. */
 window.HY_VI = Object.assign(window.HY_VI || {}, {
   'ui.menu': 'Menu', 'ui.close': 'Đóng',
+  'ui.home': 'Trang chủ HYTEK', 'ui.copy': 'Sao chép email', 'ui.copied': 'Đã sao chép', 'ui.back': 'Quay lại',
+  'hub.t.contact': 'Liên hệ | HYTEK', 'hub.ds.contact': 'Hãy cho chúng tôi biết về thiết bị, kiến trúc phần mềm hoặc nhu cầu kỹ thuật của bạn.', 'ui.lang': 'Ngôn ngữ', 'ui.crumb': 'Đường dẫn', 'ui.pause': 'Tạm dừng hoạt cảnh', 'ui.play': 'Phát hoạt cảnh',
+  'ui.gl.wait': 'Đang tải mô hình 3D…', 'ui.gl.fail': 'Không tải được mô hình 3D. Kiểm tra kết nối mạng hoặc thử trình duyệt khác.',
+  'aria.seq': 'Trao đổi bản tin giữa host nhà máy và thiết bị: thiết lập truyền thông, lệnh từ host, sự kiện bắt đầu quy trình, báo cáo cảnh báo, sự kiện hoàn tất quy trình.',
   'hub.nav.equipment': 'Thiết bị', 'hub.nav.protocols': 'Giao thức', 'hub.nav.tools': 'Công cụ',
   'hub.nav.learn': 'Học', 'hub.nav.contact': 'Liên hệ',
-  'brand.tag': 'Phần mềm kỹ thuật cho hệ thống màng mỏng tiên tiến',
+  'brand.tag': 'Phát triển phần mềm cho hệ thống màng mỏng tiên tiến',
   'hub.soon': 'Đang cập nhật',
   'hub.pg.home': 'HYTEK',
 

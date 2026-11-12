@@ -34,7 +34,7 @@
     'eq.sig.digital': 'Digital I/O', 'eq.sig.analog': 'Analog I/O', 'eq.sig.serial': 'Serial', 'eq.sig.network': 'Network',
     'eq.layer.driver': 'Device driver', 'eq.layer.sequence': 'Sequence control', 'eq.layer.interlock': 'Interlocks and safety', 'eq.layer.gem': 'GEM / host integration',
     'eq.lbl.signals': 'Signals', 'eq.lbl.protocols': 'Typical protocols', 'eq.lbl.layer': 'Software layer', 'eq.lbl.example': 'Example event',
-    'eq.lbl.parts': 'Parts', 'eq.lbl.map': 'Equipment map', 'eq.lbl.pause': 'Pause animation', 'eq.lbl.play': 'Play animation', 'eq.lbl.pick': 'Pick a part', 'eq.lbl.more': 'Read more',
+    'eq.lbl.parts': 'Parts', 'eq.lbl.map': 'Equipment map', 'eq.lbl.pause': 'Pause animation', 'eq.lbl.play': 'Play animation', 'eq.lbl.pick': 'Pick a part', 'eq.lbl.wait': 'Loading 3D model…', 'eq.all': 'All', 'eq.all.name': 'Whole cluster tool', 'eq.all.does': 'Every part in view at once. Pick a part to see what it does, how it talks and which software layer drives it.', 'eq.lbl.more': 'Read more',
     'eq.note': 'Concept-level view of a typical cluster tool. Examples are invented.'
   };
 })(typeof window !== 'undefined' ? window : globalThis);

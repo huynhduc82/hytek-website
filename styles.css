@@ -5,10 +5,19 @@
   --display:'Be Vietnam Pro',system-ui,sans-serif;--head:'Barlow Condensed','Arial Narrow',sans-serif;--data:'IBM Plex Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scrollbar-color:var(--ink) var(--paper-2)}
+html{scroll-behavior:smooth;scrollbar-color:var(--ink) var(--paper-2);scrollbar-gutter:stable;background:var(--paper)}
+html.hy-boot *,html.hy-boot *::before,html.hy-boot *::after{transition:none!important}
+html.hy-boot{scroll-behavior:auto} /* a page opened at #section jumps there; site.js then lands it under the header */
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--display);font-stretch:100%;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--sig);color:#fff}
 :focus-visible{outline:2px solid var(--sig);outline-offset:3px}
+input,textarea{caret-color:var(--sig)}
+/* 3D frames: a quiet line while Three.js loads (shown only if it takes a moment), a plain message without WebGL */
+.gl-wait{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:24px;text-align:center;font:600 14px/1.4 var(--display);color:var(--mute);pointer-events:none;opacity:0;animation:gl-wait .3s .45s var(--ease) forwards}
+@keyframes gl-wait{to{opacity:1}}
+html.rm .gl-wait{animation-duration:0s}
+.ready>.gl-wait{display:none}
+.fail>.gl-wait{animation:none;opacity:1}
 a{color:inherit}
 .data{font-family:var(--data);font-variant-numeric:tabular-nums}
 svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:square;vertical-align:-.12em}
@@ -27,8 +36,10 @@ svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.6;stroke
 .ul:hover,.ul:focus-visible{background-size:100% 1.5px}
 
 /* ---------- header ---------- */
-header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;justify-content:space-between;align-items:center;padding:0 var(--pad);
-  background:rgba(244,247,249,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;align-items:center;padding:0 var(--pad);border-bottom:1px solid var(--rule)}
+/* the frosted ground sits on a pseudo-element: backdrop-filter on the header itself would make it the containing block
+   of the fixed menu panel, squeezing the open panel into the 64px bar */
+header::before{content:'';position:absolute;inset:0;z-index:-1;background:rgba(244,247,249,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .logo{font:900 22px var(--display);font-stretch:118%;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;text-decoration:none}
 /* logo: proportions taken from logo.svg (mark 100u; gap 24u; wordmark 50u, baseline at 52u; tagline baseline at 78u, tracking .2em) */
 .logo{--M:46px;gap:calc(var(--M)*.24)}
@@ -36,13 +47,26 @@ header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;j
 .logo .wm{display:flex;flex-direction:column;height:var(--M);line-height:1}
 .logo .wm b{margin-top:calc(var(--M)*.1);font:800 calc(var(--M)*.56)/1 var(--display);font-stretch:112%;letter-spacing:.02em;color:#0b243b}
 .logo .wm small{margin-top:calc(var(--M)*.09);padding-left:1px;font:700 max(11px,calc(var(--M)*.2))/1 var(--display);font-stretch:96%;letter-spacing:.1em;text-transform:uppercase;color:#4a5c6e}
-header nav{display:flex;gap:28px;font:600 14px var(--display)}
+header .logo{margin-right:auto} /* pushes menu, Contact and language to the right, folded or not */
+header nav{display:flex;align-items:center;gap:28px;margin:0 28px 0 32px;font:600 14px var(--display)}
+@media (max-width:1599px){header.long nav{gap:22px}header.long nav a.ext::before{left:-14px}}
 header nav a{text-decoration:none;padding:6px 0}
-header nav a.cta{color:var(--sig-ink)}
+/* a link that leaves the page: set apart by a hairline and an arrow */
+header nav a.ext{position:relative;margin-left:4px}
+header nav a.ext::before{content:'';position:absolute;left:-17px;top:50%;width:1px;height:18px;margin-top:-9px;background:var(--rule)}
+header nav a.ext::after{content:'';display:inline-block;width:.6em;height:.6em;margin-left:6px;vertical-align:.05em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8L8 2M3.4 2H8v4.6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8L8 2M3.4 2H8v4.6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat}
+/* Contact: the header's one filled button, always visible */
+.hcta{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;font:600 14px var(--display);color:#fff;background:var(--sig-ink);text-decoration:none;white-space:nowrap;transition:background-color .18s}
+.hcta:hover{background:var(--ink)}
+header nav a.ul.on{background-size:100% 1.5px} /* the section on screen, same underline as hover */
 .menu{display:none;min-height:44px;padding:0 14px;border:1.5px solid var(--ink);background:none;font:600 14px var(--display);color:var(--ink)}
 
 /* ---------- stage (hero + exploded chamber) ---------- */
-#stage{position:relative;height:540vh}
+/* hero: one screen, the chamber whole (the same canvas moves into the Services stage further down) */
+.top{position:relative;height:100vh;padding:0}
+.hfig{position:absolute;right:0;top:0;width:58%;height:100%;z-index:1}
+.hfig canvas{display:block}
+#stage{position:relative;height:400vh} /* a whole number of screens, so every section after it starts on a screen boundary */
 .sticky{position:sticky;top:0;height:100vh;overflow:hidden}
 .fig{position:absolute;inset:0}
 #gl{position:absolute;right:0;top:0;width:58%;height:100%;z-index:1}
@@ -65,7 +89,7 @@ svg#leads{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-eve
 .cue .i{animation:nudge 1.8s var(--ease) infinite}
 @keyframes nudge{0%,60%,100%{transform:none}30%{transform:translateY(4px)}}
 
-.svc{position:absolute;left:var(--pad);top:64px;bottom:0;width:min(450px,35%);z-index:3;display:flex;flex-direction:column;justify-content:center;opacity:0;pointer-events:none}
+.svc{position:absolute;left:var(--pad);top:64px;bottom:0;width:min(450px,35%);z-index:3;display:flex;flex-direction:column;justify-content:center}
 .svc h2{font:800 clamp(40px,4.2vw,58px)/.88 var(--display);font-stretch:70%;text-transform:uppercase;margin:0 0 26px;letter-spacing:-.01em;text-wrap:balance}
 .svc ol{list-style:none;margin:0;padding:0;border-top:1.5px solid var(--ink)}
 .svc li{border-bottom:1px solid var(--rule);padding:11px 0}
@@ -76,10 +100,11 @@ svg#leads{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-eve
 .svc p{margin:0;font-size:14px;line-height:1.5;color:var(--mute);display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease),margin .45s var(--ease)}
 .svc p span{overflow:hidden}
 .svc li.on b{color:var(--sig-ink)}
+.svc li .h[role="button"]{cursor:pointer}.svc li .h[role="button"]:hover b{color:var(--sig-ink)}
 .bl.w{width:auto;padding:0 7px;border-radius:11px}
 .svc li.on .bl{color:#fff;background:var(--sig);border-color:var(--sig)}
 .svc li.on p{grid-template-rows:1fr;margin-top:6px}
-.steps{position:absolute;left:var(--pad);bottom:36px;z-index:3;display:flex;gap:4px;opacity:0}
+.steps{position:absolute;left:var(--pad);bottom:36px;z-index:3;display:flex;gap:4px}
 .steps i{width:28px;height:3px;background:var(--rule);transition:background-color .3s}.steps i.on{background:var(--ink)}
 
 .bal{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;white-space:nowrap;opacity:0;font:600 13px var(--display);font-stretch:90%;pointer-events:none}
@@ -106,8 +131,8 @@ section{position:relative;padding:128px var(--pad) 120px}
 .replay{position:absolute;right:0;top:-52px;min-height:44px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:none;color:var(--paper);border:1.5px solid #3a4a5a;font:600 13px var(--display);cursor:pointer;transition:border-color .2s,transform .18s var(--ease)}
 .replay:hover{border-color:var(--paper);transform:translateY(-2px)}.replay:active{transform:scale(.98)}
 
-.contact{padding-bottom:72px}
-.contact h2{position:relative;z-index:1;margin:0;font:800 clamp(56px,10vw,170px)/.82 var(--display);font-stretch:64%;text-transform:uppercase;letter-spacing:-.02em;text-wrap:balance}
+.contact{padding-bottom:72px;min-height:calc(100vh - 64px);min-height:calc(100svh - 64px)} /* last section: tall enough for "Contact" in the menu to land like the others */
+.contact h2,.contact h1.ch{position:relative;z-index:1;margin:0;font:800 clamp(56px,10vw,170px)/.82 var(--display);font-stretch:64%;text-transform:uppercase;letter-spacing:-.02em;text-wrap:balance}
 
 
 
@@ -123,7 +148,7 @@ section{position:relative;padding:128px var(--pad) 120px}
 .proto{background:var(--paper-2)}
 .proto .tbl{position:relative;z-index:1;border-top:1.5px solid var(--ink)}
 .proto .r{display:grid;grid-template-columns:3fr 4fr 5fr;gap:0 20px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--rule)}
-.proto .r .t{font:500 12px var(--data);letter-spacing:.04em;color:var(--mute)}
+.proto .r .t{font:500 12px var(--data);letter-spacing:.04em;color:var(--mute);text-wrap:balance}
 .proto .r h3{margin:0;font:700 26px/1.05 var(--display);font-stretch:80%}
 .proto .r p{margin:0;color:var(--ink-2);font-size:15px}
 .proto .r.key h3{color:var(--sig-ink)}
@@ -145,11 +170,17 @@ section{position:relative;padding:128px var(--pad) 120px}
 /* ---------- mobile ---------- */
 @media (max-width:900px){
   header nav{display:none}
-  header nav.open{display:flex;position:fixed;inset:64px 0 0;flex-direction:column;gap:0;background:var(--paper);padding:20px var(--pad)}
-  header nav.open a{font:800 40px/1 var(--display);font-stretch:70%;text-transform:uppercase;padding:14px 0;border-bottom:1px solid var(--rule)}
+  header nav.open{display:flex;position:fixed;inset:64px 0 0;flex-direction:column;align-items:stretch;gap:0;margin:0;background:var(--paper);padding:20px var(--pad);overflow-y:auto}
+  header nav.open a{font:800 40px/1 var(--head);text-transform:uppercase;padding:14px 0;border-bottom:1px solid var(--rule)}
+  header nav.open a.ext{margin-left:0}header nav.open a.ext::before{display:none}
   .menu{display:block}
-  #stage{height:560vh}
+  #stage{height:460vh}
   #gl{width:100%;top:auto;bottom:0;height:40%}
+  /* phones: the hero stacks, chamber below the copy (never over it) */
+  .top{height:auto}
+  .top .sticky{position:relative;height:auto;overflow:visible}
+  .top .hero{position:relative;left:0;right:0;padding:84px var(--pad) 0}
+  .top .hfig{position:relative;width:100%;height:min(46vh,380px)}
   .hero{padding-top:84px}
   .hero h1{font-size:clamp(40px,min(11.6vw,8vh),96px)}
   .hero .lead{width:100%;font-size:15px;margin-top:18px}
@@ -221,14 +252,14 @@ section{position:relative;padding:128px var(--pad) 120px}
 .foot a{color:#9cc4ec}
 @media (max-width:900px){.sim.loop{aspect-ratio:400/620}.hmi{font-size:13px;aspect-ratio:auto}.trendbox{flex:none;height:110px}.reads b{font-size:19px}}
 @media (max-width:560px){.rcp th:nth-child(5),.rcp td:nth-child(5){display:none}}
-.no3d #gl,.no3d #leads,.no3d .bal{display:none}
+.no3d #gl,.no3d .hfig,.no3d #leads,.no3d .bal{display:none}
 
 /* ---------- 2026-11 update: original copy restored, language switch, platform simulations, simulator section ---------- */
-.hright{display:flex;align-items:center;gap:12px}
-.lang{display:flex;border:1.5px solid var(--ink)}
-.lang button{min-width:44px;min-height:36px;padding:0 10px;border:0;background:none;font:700 13px var(--display);color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s}
-.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
-.lang button:not([aria-pressed="true"]):hover{background:var(--paper-2)}
+.hright{display:flex;align-items:center;gap:16px}
+/* language switch: one outlined button, globe + the other language's own name */
+.lang{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 12px;border:0;background:none;font:600 14px var(--display);color:var(--ink);white-space:nowrap;cursor:pointer;box-shadow:inset 0 0 0 1px var(--rule);transition:box-shadow .18s}
+.lang:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+.lang svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.3}
 .hero .kick{font:600 13px var(--display);letter-spacing:.08em;color:var(--sig-ink);margin-bottom:14px}
 .hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:20px;font:600 13px var(--display);color:var(--mute)}
 .hero .meta span+span::before{content:'';display:inline-block;width:5px;height:5px;background:var(--sig);margin-right:18px;vertical-align:middle}
@@ -256,10 +287,10 @@ section{position:relative;padding:128px var(--pad) 120px}
 .eqview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .eqhud{position:absolute;left:16px;top:14px;right:64px;z-index:2;display:flex;flex-direction:column;gap:2px;pointer-events:none}
 .eqhud b{font:700 20px var(--display);font-stretch:85%}
-.eqhud span{font:500 12px var(--data);color:var(--sig-ink)}
+.eqhud span{font:600 15px/1.3 var(--data);color:var(--sig-ink);letter-spacing:.02em}
 .eqhint{position:absolute;left:16px;bottom:12px;z-index:2;display:flex;align-items:center;gap:6px;font:600 12px var(--display);color:var(--mute);pointer-events:none}
 .eqlbl{position:absolute;z-index:2;transform:translate(-50%,-100%);font:600 12px var(--data);color:var(--ink);background:#fff;padding:1px 5px;border:1px solid var(--rule);pointer-events:none;white-space:nowrap}
-.eqlbl.on{color:#fff;background:var(--sig);border-color:var(--sig)}
+.eqlbl.on{z-index:3;color:#fff;background:var(--sig);border-color:var(--sig);font-size:14px;font-weight:700;padding:3px 8px}
 .eqlbl.opt{color:var(--ink-2);border-style:dashed}.eqlbl.opt.on{color:#fff}
 .chambers{position:relative;z-index:1;margin-top:56px}
 .chambers h3{margin:0 0 14px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
@@ -283,19 +314,19 @@ section{position:relative;padding:128px var(--pad) 120px}
 
 /* contact restored */
 .cgrid{position:relative;z-index:1;display:grid;grid-template-columns:7fr 5fr;gap:28px 40px;align-items:end}
-.contact .cp{font-size:19px;color:var(--ink-2);margin:22px 0 0;max-width:46ch}
+.contact .cp{font-size:19px;line-height:1.5;color:var(--ink-2);margin:22px 0 0;max-width:46ch}
 .points{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
 .points span{padding:7px 12px;border:1px solid var(--rule);font:600 13px var(--display);color:var(--ink-2)}
 .card{display:flex;flex-direction:column;gap:8px;padding:26px;background:var(--navy);color:#c9d6e2;font-size:14px}
 .card strong{font:800 20px var(--display);font-stretch:85%;color:#fff}
 .card a.ul{color:#9cc4ec;width:fit-content}
 .card .btn{margin-top:12px;justify-content:center;background:var(--sig);color:#fff}
-.contact h2{font-size:clamp(52px,7.4vw,124px)}
+.contact h2,.contact h1.ch{font-size:clamp(52px,7.4vw,124px)}
 
 /* Vietnamese: room for stacked diacritics in the condensed display face */
 :lang(vi) .hero h1{line-height:.92;font-size:clamp(44px,min(7.6vw,10.5vh),118px)}
-:lang(vi) .line{padding-top:.24em;margin-top:-.2em}
-:lang(vi) h2{line-height:.98}
+:lang(vi) .line{padding-top:.24em;margin-top:-.2em;padding-bottom:.14em;margin-bottom:-.12em} /* room for the dot below (Ị, Ạ, Ệ) as well as the marks above */
+:lang(vi) h2{line-height:1.1} /* stacked marks (Ằ, Ầ, Ề) on a second line must clear the letters of the line above */
 
 @media (max-width:1100px){header nav{gap:18px;font-size:13px}}
 @media (max-width:900px){
@@ -310,7 +341,14 @@ section{position:relative;padding:128px var(--pad) 120px}
   .hero .kick{font-size:12px;margin-bottom:10px}
   .pl b{font-size:20px}.pl .mini{width:76px;height:46px}
 }
-@media (max-width:480px){.logo .wm small{display:none}.lang button{min-width:40px;padding:0 6px}}
+@media (max-width:480px){.logo .wm small{display:none}}
+/* phones: logo, Contact and Menu in the bar; the language switch moves into the open menu panel */
+@media (max-width:600px){
+  .hright{gap:10px}
+  .lang{width:44px;padding:0;justify-content:center}
+  .lang span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} /* globe only; the name stays for screen readers */
+  .hcta{padding:0 12px}
+}
 .prgrid .r{grid-template-columns:2.6fr 4.4fr 5fr}.prgrid .r h3{font-size:22px}
 .strip.one{grid-template-columns:1fr;margin-bottom:0}
 @media (max-width:900px){.strip.one .sim{--ar:16/10!important}}
@@ -321,17 +359,17 @@ section{position:relative;padding:128px var(--pad) 120px}
   .about{min-height:100vh;padding-top:clamp(52px,9vh,96px);padding-bottom:clamp(28px,6vh,64px);display:flex;flex-direction:column;justify-content:center}
   .about .sheet{margin-bottom:clamp(16px,2.6vh,28px)}
   .about .grid{align-items:stretch}
-  .about h2{grid-column:1/10;margin-bottom:clamp(18px,3vh,30px);font-size:clamp(46px,6vw,92px)}
-  .about .txt{grid-column:1/7;grid-row:2;font-size:clamp(15px,1.9vh,17px)}
-  .about .txt p{margin-bottom:12px}
-  .about blockquote{margin-top:18px;padding-top:16px;font-size:clamp(18px,2.5vh,22px)}
+  .about h2{grid-column:1/10;margin-bottom:clamp(14px,2.6vh,30px);font-size:clamp(46px,min(6vw,9.2vh),92px)}
+  .about .txt{grid-column:1/7;grid-row:2;font-size:clamp(14px,1.85vh,17px)}
+  .about .txt p{margin-bottom:clamp(8px,1.4vh,12px)}
+  .about blockquote{margin-top:clamp(12px,2vh,18px);padding-top:clamp(10px,1.8vh,16px);font-size:clamp(16px,2.4vh,22px)}
   .about .pics{grid-column:8/13;grid-row:2;display:flex}
-  .about .sim.hmi{aspect-ratio:auto;width:100%;min-height:420px}
+  .about .sim.hmi{aspect-ratio:auto;width:100%;min-height:min(420px,52vh)}
 }
 
 /* type: Be Vietnam Pro for text (built for Vietnamese), Barlow Condensed for the condensed display voice; both carry full Vietnamese */
-.hero h1,.svc h2,.sh h2,.about h2,.contact h2,.tblock b,.svc b,.pl b,.gemgrid li,.proto .r h3,.printro h3,.caps h3,.partner .models h3,.chips span,.card strong,.eqhud b{font-family:var(--head)}
-.hero h1,.sh h2,.about h2,.contact h2{letter-spacing:-.01em}
+.hero h1,.svc h2,.sh h2,.about h2,.contact h2,.contact h1.ch,.tblock b,.svc b,.pl b,.gemgrid li,.proto .r h3,.printro h3,.caps h3,.partner .models h3,.chips span,.card strong,.eqhud b{font-family:var(--head)}
+.hero h1,.sh h2,.about h2,.contact h2,.contact h1.ch{letter-spacing:-.01em}
 /* hero breathing room with the wider text face */
 .hero .lead{width:min(580px,50%);font-size:16px}
 .hero h1{font-size:clamp(46px,min(8.8vw,12vh),134px)}
@@ -368,3 +406,141 @@ section{position:relative;padding:128px var(--pad) 120px}
 .subnav a.cta{color:var(--sig-ink)}
 body[data-section="about"] main [id]{scroll-margin-top:72px}
 @media (max-width:900px){.subnav{gap:20px;font-size:13px}}
+/* touch screens: every control at least 44px tall; standalone text links get a taller hit area without moving the text */
+@media (pointer:coarse){
+  .lang{min-height:44px}
+  .hcta{min-height:44px}
+  .svc li .h[role="button"]{padding:11px 0;margin:-11px 0}
+  .logo{min-height:44px}
+  a.ul{padding-block:4px;background-origin:content-box}
+}
+/* contact card: copy the address (works without a mail program), and the contact page's way back to the article */
+.card .mrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.copy{min-height:30px;padding:0 10px;border:0;background:none;box-shadow:inset 0 0 0 1px rgba(201,214,226,.4);font:600 12px var(--display);color:#c9d6e2;cursor:pointer;transition:box-shadow .18s,color .18s}
+.copy:hover{box-shadow:inset 0 0 0 1px #c9d6e2;color:#fff}.copy[data-done]{color:#9cc4ec;box-shadow:inset 0 0 0 1px #9cc4ec}
+.contact .from{position:relative;z-index:1;display:inline-block;margin:0 0 28px;font:600 14px var(--display);color:var(--sig-ink)}.contact .from[hidden]{display:none}
+@media (pointer:coarse){.copy{min-height:44px}}
+:lang(vi) .contact h2,:lang(vi) .contact h1.ch{line-height:1.1} /* stacked marks above and the dot below need room in Vietnamese */
+/* contact page: header, contact and footer in one screen (no scroll at 16:9); content centred in the space left */
+body[data-section="contact"]{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+body[data-section="contact"] main{flex:1;display:flex}
+body[data-section="contact"] .contact{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:calc(64px + clamp(16px,4vh,48px)) var(--pad) clamp(20px,4vh,48px)}
+body[data-section="contact"] .contact h1.ch{font-size:clamp(44px,min(7vw,11.6vh),150px)}
+@media (min-height:800px){body[data-section="contact"] .contact h1.ch{font-size:clamp(44px,min(7vw,12.5vh),150px)}}
+
+@media (min-width:1500px) and (min-height:820px){body[data-section="contact"] .contact .cp{font-size:21px}body[data-section="contact"] .points span{font-size:14px;padding:9px 14px}body[data-section="contact"] .card{padding:34px;font-size:16px;gap:10px}body[data-section="contact"] .card strong{font-size:26px}body[data-section="contact"] .card .btn{min-height:54px;font-size:16px}}
+body[data-section="contact"] .contact .cp{margin-top:clamp(12px,2.2vh,22px)}
+body[data-section="contact"] .contact .from{margin-bottom:clamp(12px,2.5vh,28px)}
+:lang(vi) body[data-section="contact"] .contact .cp{margin-top:clamp(18px,3vh,34px)} /* clear the dot below the last heading line */
+/* text that can wrap gets real leading (impeccable tight-leading: the fonts' normal is ~1.18) */
+.btn,.card strong,.points span,.contact .from,.copy{line-height:1.3}
+/* Engineering partnership laid out like the hero: one screen, words on the left, the engagement diagram standing free on
+   the right (its vertical drawing), the four engagement models as a band at the bottom like the hero's stats band */
+@media (min-width:901px) and (min-height:620px){
+  .partner{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:clamp(24px,3vw,56px);
+    height:100vh;height:100svh;padding-top:clamp(84px,11.5vh,108px);padding-bottom:36px}
+  .partner>.sheet{grid-column:1/-1;grid-row:1}
+  .partner .sh{grid-column:1;grid-row:2;align-self:start;display:block;margin:0}
+  .partner .sh h2{font-size:clamp(46px,min(5.4vw,10vh),92px)}
+  .partner .sh p{margin-top:clamp(14px,2.4vh,24px);max-width:46ch}
+  :lang(vi) .partner .sh p{margin-top:clamp(20px,3vh,28px)}
+  .partner .sim.loop{grid-column:2;grid-row:2;aspect-ratio:auto;min-height:0;margin:0 0 clamp(14px,2.5vh,28px);border:0;background:none}
+  .partner .sim.loop svg{position:absolute;inset:0;width:100%;height:100%}
+  .partner .models{grid-column:1/-1;grid-row:3;margin:0;border:1.5px solid var(--ink);background:var(--paper)}
+  .partner .models div{padding:10px 14px 12px;border-right:0;border-left:1px solid var(--ink)}
+  .partner .models div:first-child{border-left:0}.partner .models div+div{padding-left:14px}
+  .partner .models h3{font-size:clamp(17px,1.3vw,20px);margin-bottom:4px}
+  .partner .models p{font-size:clamp(13px,.95vw,14px);line-height:1.45}
+}
+/* ---------- every landing section = one screen on desktop, in the hero's frame ----------
+   label under the header at the hero's height, last row 36px above the bottom. Sections whose content cannot fit
+   with the heading on top use the hero's arrangement: words on the left, the visual on the right, a band at the bottom.
+   The inner wrappers (.eqx, .prgrid, .gemgrid, .simgrid) step aside (display:contents) so their parts join this grid. */
+@media (min-width:901px) and (min-height:620px){
+  #about,#equipment,#protocols,#gem,#simulator,#contact{min-height:0;height:100vh;height:100svh;padding-top:clamp(84px,11.5vh,108px);padding-bottom:36px}
+  #about{justify-content:flex-start}
+  /* About in the hero's arrangement like the sections after it: heading and text on the left, the HMI down the right
+     from the heading's top to the bottom line; the quote closes the text column on that line, the HMI's pressure trend
+     takes whatever height is left (short laptops to tall monitors) */
+  #about>.grid{flex:1;min-height:0;grid-template-columns:minmax(0,47%) minmax(0,1fr);column-gap:clamp(24px,3vw,56px);grid-template-rows:auto minmax(0,1fr)}
+  #about h2{grid-column:1;grid-row:1;font-size:clamp(38px,min(4.3vw,7.6vh),78px)}
+  #about .txt{grid-column:1;grid-row:2;display:flex;flex-direction:column;min-height:0;font-size:clamp(14px,min(1.85vh,1.1vw),19px)}
+  #about .txt>:first-child{margin-top:auto} /* the text block sits on the bottom line; when space runs out it never rides up into the heading */
+  #about blockquote{margin-top:clamp(12px,2.4vh,26px);font-size:clamp(16px,min(2.4vh,1.45vw),26px)}
+  #about .pics{grid-column:2;grid-row:1/3;min-height:0}
+  #about .sim.hmi{min-height:0;height:100%;gap:clamp(6px,1.2vh,12px);padding:clamp(10px,1.6vh,16px)}
+  #about .hmi .states li{padding:clamp(4px,.8vh,8px) 2px}
+  #about .hmi .reads div{padding:clamp(4px,.8vh,8px) 10px}
+  #about .hmi .reads b{font-size:clamp(18px,2.4vh,28px)}
+  #about .hmi .trendbox{min-height:36px}
+  #contact{display:flex;flex-direction:column}
+  #equipment,#protocols,#gem,#simulator{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);grid-template-rows:auto auto 1fr auto;column-gap:clamp(24px,3vw,56px)}
+  #equipment>.sheet,#protocols>.sheet,#gem>.sheet,#simulator>.sheet{grid-column:1/-1;grid-row:1}
+  #equipment>.sh,#protocols>.sh,#gem>.sh,#simulator>.sh{grid-column:1;grid-row:2;display:block;margin:0 0 clamp(14px,2.4vh,28px)}
+  #equipment>.sh h2,#protocols>.sh h2,#gem>.sh h2,#simulator>.sh h2{font-size:clamp(40px,min(4.6vw,8.4vh),84px)}
+  #equipment>.sh p,#protocols>.sh p,#gem>.sh p,#simulator>.sh p{margin-top:clamp(12px,2vh,22px);font-size:clamp(15px,1.15vw,18px)}
+  :lang(vi) #equipment>.sh p,:lang(vi) #protocols>.sh p,:lang(vi) #gem>.sh p,:lang(vi) #simulator>.sh p{margin-top:clamp(18px,2.6vh,26px)}
+  .eqx,.prgrid,.gemgrid,.simgrid{display:contents}
+
+  /* Equipment: platform list under the heading (only the selected row shows its description), the 3D viewer down the
+     right, the generic names as the bottom band */
+  #equipment .eqlist{grid-column:1;grid-row:3;align-self:start;position:relative;z-index:1}
+  #equipment .pl{padding-top:clamp(7px,1.2vh,14px);padding-bottom:clamp(7px,1.2vh,14px)}
+  #equipment .pl b{font-size:clamp(18px,1.5vw,23px)}
+  #equipment .pl .mini{height:clamp(30px,4.4vh,46px);width:auto}
+  #equipment .pl:not([aria-pressed="true"]) .s{display:none}
+  #equipment .eqview{grid-column:2;grid-row:2/4;position:relative;top:0;height:auto;min-height:0;margin:0 0 clamp(14px,2.4vh,28px)}
+  #equipment .chambers{grid-column:1/-1;grid-row:4;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+  #equipment .chambers h3{margin:0}
+  #equipment .chips{gap:6px}
+  #equipment .chips span{padding:5px 10px;font-size:14px}
+
+  /* Protocols: heading top left, the integration card at the bottom left, the protocol table down the right with its
+     five rows sharing the full height (no empty half screen on tall windows); type grows with the window height */
+  #protocols .printro{grid-column:1;grid-row:3/5;align-self:end;position:relative;z-index:1}
+  #protocols .tbl{grid-column:2;grid-row:2/5;display:flex;flex-direction:column;min-height:0;position:relative;z-index:1;container-type:inline-size}
+  #protocols .tbl{border-top:0} /* like the visuals of the other sections: the right column starts level with the heading, no second rule under the label rule */
+  #protocols .r{flex:1 1 auto;align-content:start;padding:clamp(8px,1.6vh,18px) 0}
+  #protocols .r:first-child{padding-top:0}
+  #protocols .r h3{font-size:clamp(20px,min(1.9vw,3.1vh),34px)}
+  #protocols .r p{font-size:clamp(13.5px,min(1.05vw,1.75vh),17px);line-height:1.45}
+
+  /* GEM / SECS: heading and the six capabilities on the left, the message exchange down the right */
+  #gem .gemgrid ul{grid-column:1;grid-row:3;align-self:start;position:relative;z-index:1}
+  #gem .seqwrap{grid-column:2;grid-row:2/5;position:relative;z-index:1;display:flex;flex-direction:column;min-height:0;margin:0;padding-top:56px}
+  #gem .replay{top:0}
+  #gem #seq{flex:1;min-height:0;height:100%}
+
+  /* Simulator: heading and intro on the left, the switch diagram down the right, the six capabilities as the bottom band */
+  #simulator .simgrid>figure{grid-column:2;grid-row:2/4;aspect-ratio:auto;min-height:0;margin:0 0 clamp(14px,2.4vh,28px)}
+  #simulator .simgrid>figure svg{position:absolute;inset:0;width:100%;height:100%}
+  #simulator .caps{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;position:relative;z-index:1}
+  #simulator .caps div{padding:clamp(6px,1vh,12px) 0}
+  #simulator .caps h3{font-size:clamp(17px,1.3vw,20px)}
+  #simulator .caps p{font-size:clamp(12.5px,.9vw,14px);line-height:1.4}
+}
+@media (min-width:901px) and (min-height:620px) and (max-height:860px){#equipment .pl:not([aria-pressed="true"]) .t{display:none}} /* shorter screens: the unselected rows show their name only */
+@media (min-width:901px) and (min-height:620px){#equipment{grid-template-columns:minmax(0,47%) minmax(0,1fr)}#equipment>.sh h2{font-size:clamp(38px,min(4.3vw,7.6vh),78px)}#equipment .chips span{padding:4px 9px;font-size:13px}} /* Equipment: a wider word column keeps the heading on two lines */
+@media (min-width:901px) and (min-height:620px) and (max-height:800px){#equipment .pl{padding-top:5px;padding-bottom:5px}#equipment .pl b{font-size:17px}#equipment .pl .mini{height:28px}#equipment .pl .s{font-size:13px;line-height:1.4}} /* short laptop screens */
+@media (min-width:901px) and (min-height:620px){@container (max-width:720px){#protocols .r{grid-template-columns:minmax(0,4fr) minmax(0,5fr);row-gap:4px;align-items:start}#protocols .r .t{grid-column:1;grid-row:1}#protocols .r h3{grid-column:1;grid-row:2}#protocols .r p{grid-column:2;grid-row:1/3}}} /* a narrow table: the group label sits above the protocol name, so the description gets the width and the table stays inside one screen */
+@media (min-width:901px) and (min-height:620px) and (max-height:680px),(min-width:901px) and (max-width:1100px) and (min-height:620px){#about>.grid{grid-template-columns:minmax(0,53%) minmax(0,1fr)}} /* short or narrow windows: a wider text column keeps the text inside the screen */
+@media (min-width:901px) and (min-height:620px) and (max-height:820px){#about .hmi .ilk{grid-template-columns:1fr 1fr;column-gap:12px}} /* short laptops: the four interlocks in two columns */
+@media (min-width:901px){:lang(vi) .about h2{margin-bottom:clamp(22px,3.4vh,36px)}} /* the dot below the last heading line clears the text */
+
+/* ---------- wheel scrolling stops on whole screens (desktop, where every section is one screen) ----------
+   Each section starts a stop; inside the scroll-driven chamber the stops are the whole chamber and the six service
+   steps (P = S0 + (i + .5) * SL / 6 in app.js). The last screen is the contact section with the footer under it. */
+#stage .snap{position:absolute;left:0;width:1px;height:1px;top:calc(var(--p) * (100% - 100vh));pointer-events:none}
+@media (min-width:901px) and (min-height:620px){
+  html:has(#stage){scroll-snap-type:y mandatory}
+  html.no-snap:has(#stage),html.snap-off:has(#stage){scroll-snap-type:none} /* :has(#stage) carries an id: match its weight */
+  #top,#about,#equipment,#protocols,#gem,#simulator,#partnership,#contact,#stage .snap{scroll-snap-align:start;scroll-margin-top:0} /* stops sit on the screen edge, not under the old anchor margin */
+  .rm #stage .snap{display:none}.rm #stage{scroll-snap-align:start}
+  body:not([data-section="contact"]) #contact{height:calc(100vh - var(--foot-h,76px));height:calc(100svh - var(--foot-h,76px))}
+  body:not([data-section="contact"]) #contact .cgrid{flex:1;align-items:center}
+  body[data-section="contact"] #contact{height:auto} /* contact page: main fills the screen above the footer (body flex column, 100svh), so page + footer are one screen */
+}
+@media (min-width:901px) and (min-height:620px) and (max-height:760px){ /* short laptops: the heading gives way so contact and footer still share the screen */
+  body:not([data-section="contact"]) #contact h2{font-size:clamp(44px,min(7.4vw,10.5vh),124px)}
+  body:not([data-section="contact"]) #contact .cp{margin-top:14px}
+}

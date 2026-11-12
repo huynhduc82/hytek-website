@@ -4,10 +4,11 @@ test('header links every section in order, relative to root', () => {
   const h = UI.renderHeader('../../', 'protocols');
   const hrefs = [...h.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
   for (const s of window.HY_SITE.sections) assert.ok(hrefs.includes('../../' + s.path), s.path);
-  assert.ok(hrefs.includes('mailto:dat.do@hytekvn.com.vn'));
+  assert.ok(h.includes('class="hcta" href="../../contact/index.html"'), 'Contact is the header button and opens the contact page');
   assert.ok(h.indexOf('hub.nav.equipment') < h.indexOf('hub.nav.protocols'));
   assert.match(h, /aria-current="page"[^>]*data-i18n="hub.nav.protocols"|data-i18n="hub.nav.protocols"[^>]*aria-current="page"/);
-  assert.match(h, /data-lang="en"/); assert.match(h, /data-lang="vi"/);
+  assert.match(h, /<button type="button" class="lang" data-lang="vi"[^>]*>[\s\S]*?<span lang="vi">Tiếng Việt<\/span><\/button>/, 'one language button naming the other language');
+  assert.ok(h.indexOf('class="lang"') < h.indexOf('class="hcta"'), 'language button stands before Contact');
 });
 test('home header links have no ../', () => assert.doesNotMatch(UI.renderHeader('', null), /href="\.\.\//));
 test('footer carries the email and no root-absolute links', () => {

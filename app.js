@@ -9,7 +9,8 @@ const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
 /* "Services" in the About sub-nav jumps to the step where the list is fully visible */
 (function(){const a=document.querySelector('a[href="#services"]');if(!a)return;
   a.addEventListener('click',e=>{if(document.documentElement.classList.contains('rm'))return;e.preventDefault();
-    const s=document.getElementById('stage');scrollTo({top:s.offsetTop+(s.offsetHeight-innerHeight)*.3,behavior:'smooth'})});
+    const s=document.getElementById('stage');scrollTo({top:s.offsetTop+(s.offsetHeight-innerHeight)*.24,behavior:'instant'});
+    if(history.pushState)history.pushState(null,'','#services')});
 })();
 
 
@@ -20,12 +21,17 @@ const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
 async function chamber3D(){
 const THREE=await import('three');
 const {RoomEnvironment}=await import('three/addons/environments/RoomEnvironment.js');
+const [{LineSegments2},{LineSegmentsGeometry},{LineMaterial}]=await Promise.all([import('three/addons/lines/LineSegments2.js'),import('three/addons/lines/LineSegmentsGeometry.js'),import('three/addons/lines/LineMaterial.js')]);
 const RM=document.documentElement.classList.contains('rm');
-const host=document.getElementById('gl'),leads=document.getElementById('leads'),fig=document.getElementById('fig'),stage=document.getElementById('stage');
+// one renderer, two places: the hero shows the chamber whole; the Services stage takes it apart. The canvas moves to
+// whichever is on screen (they are screens apart), so the page keeps a single WebGL context for this scene.
+const glStage=document.getElementById('gl'),glHero=document.getElementById('glHero'),heroSec=document.getElementById('top');
+let host=glHero||glStage;
+const leads=document.getElementById('leads'),fig=document.getElementById('fig'),stage=document.getElementById('stage');
 const W=()=>host.clientWidth,H=()=>host.clientHeight,mobile=()=>innerWidth<=900;
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(2,devicePixelRatio));r.setSize(W(),H());host.appendChild(r.domElement);
 r.domElement.setAttribute('role','img');
-r.domElement.setAttribute('aria-label','Process chamber drawn in 3D, taken apart into six parts: plasma source, process chamber, wafer chuck, slit valve, gas delivery and turbo pump.');
+const ariaCh=()=>r.domElement.setAttribute('aria-label',T('aria.chamber3d','Process chamber drawn in 3D, taken apart into six parts: plasma source, process chamber, wafer chuck, slit valve, gas delivery and turbo pump.'));ariaCh();addEventListener('hy:lang',ariaCh);
 r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
 const cam=new THREE.PerspectiveCamera(28,W()/H(),.1,100);
@@ -96,6 +102,23 @@ const blades=new THREE.Group();const bmat=M.steel();for(let i=0;i<20;i++){const 
 blades.position.y=.54;g.add(blades);
 g.position.y=-1.6;part('Turbo / cryo pump',g,new THREE.Vector3(0,-1.35,0));
 
+// the parts a service drives: blue tint and a thick outline (plain WebGL lines are 1px), eased in and out.
+// The copper coil and the MFC keep their own glow; bolts and turbo blades get no outline (too small, it would clutter).
+parts.forEach(p=>{
+  p.k=0;p.mats=[];const ms=[],seen=new Set();
+  p.obj.traverse(o=>{if(o.isMesh&&!o.material.isMeshBasicMaterial)ms.push(o)}); // LineSegments2 is a Mesh too: collect first
+  ms.forEach(o=>{const m=o.material;if(!seen.has(m)&&m!==coilMat&&m!==mfcMat){seen.add(m);p.mats.push({m,c:m.color.clone()})}});
+  p.fat=new LineMaterial({color:0x0b6ac7,linewidth:2,transparent:true,opacity:0,depthWrite:false});p.fat.visible=false;p.fat.resolution.set(W(),H());
+  ms.forEach(o=>{if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere();let b=false;for(let q=o;q;q=q.parent)if(q===blades)b=true;
+    if(b||o.geometry.boundingSphere.radius<.12)return;o.add(new LineSegments2(new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(o.geometry,28)),p.fat))});
+});
+// a step that drives every part (HMI / GUI) keeps the colours as built: blue outline and balloons only
+function emphasis(step){const every=step>=0&&MAP[step].length===parts.length;parts.forEach((p,i)=>{
+  const inStep=step>=0&&MAP[step].includes(i)?1:0,tint=every?0:inStep; // HMI / GUI: 2px outline on every part, no tint
+  p.k=RM?tint:p.k+(tint-p.k)*.12;p.o=RM?inStep:(p.o||0)+(inStep-(p.o||0))*.12;
+  p.mats.forEach(({m,c})=>{m.color.copy(c).lerp(SIG,.5*p.k);if(m.emissive){m.emissive.copy(SIG);m.emissiveIntensity=.3*p.k}});
+  p.fat.opacity=p.o;p.fat.visible=p.o>.01})}
+
 // service step -> part indices (0-based); matches the balloons in the list
 const MAP=[[1,3],[0,4],[2],[3,4],[5,0],[0,1,2,3,4,5]];
 
@@ -109,35 +132,52 @@ const bals=parts.map((p,i)=>{const d=document.createElement('div');d.className='
 const PK=['part.src','part.ch','part.chuck','part.valve','part.mfc','part.pump'];
 const nameBals=()=>bals.forEach((d,i)=>{d.querySelector('span').textContent=T(PK[i],parts[i].name)});nameBals();addEventListener('hy:lang',nameBals);
 
-const hero=document.getElementById('hero'),tblock=document.getElementById('tblock'),cue=document.getElementById('cue'),svc=document.getElementById('services'),steps=document.getElementById('steps');
+const cue=document.getElementById('cue'),svc=document.getElementById('services'),steps=document.getElementById('steps');
 const lis=[...document.querySelectorAll('#svcList li')],stepI=[...steps.children];
+// each service row is a control: it scrolls the stage to its step (reduced motion: shows that step in place)
+let picked=-1;
+lis.forEach((li,i)=>{const h=li.querySelector('.h');if(!h)return;h.setAttribute('role','button');h.tabIndex=0;
+  const go=()=>{if(RM){picked=picked===i?-1:i;frame();return}
+    const P=S0+(i+.5)*(SL/6);scrollTo({top:stage.offsetTop+P*(stage.offsetHeight-innerHeight),behavior:'smooth'})};
+  h.addEventListener('click',go);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
 const HP=null;
-let P=0,Ps=0,t=0,active=-2,visible=true,spin=.04,lift=0,eS=0;const T0=performance.now();
+let P=0,Ps=0,t=0,active=-2,visible=true,spin=.04,lift=0,eS=0,mode='';const T0=performance.now();
+const S0=.18,SL=.72; // stage timeline: take apart by S0, six service steps over SL, reassemble at the end
 const onScroll=()=>{const b=stage.getBoundingClientRect();P=clamp(-b.top/(b.height-innerHeight))};
 addEventListener('scroll',onScroll,{passive:true});onScroll();
-new IntersectionObserver(es=>{visible=es[0].isIntersecting},{rootMargin:'100px'}).observe(stage);
+// draw only while the canvas is really on screen: a WebGL frame drawn just off screen stalls the next swap in Chrome (measured 250 ms)
+const onScreen=el=>{if(!el)return false;const b=el.getBoundingClientRect();return b.bottom>0&&b.top<innerHeight};
+function place(){ // move the canvas to the hero or the stage, whichever is on screen
+  const want=onScreen(heroSec)&&glHero?'hero':'stage';visible=want==='hero'||onScreen(stage);
+  if(want===mode)return;mode=want;host=want==='hero'?glHero:glStage;host.appendChild(r.domElement);resize()}
+if(RM)addEventListener('scroll',()=>{const m=mode;place();if(m!==mode)frame()},{passive:true});
 const v=new THREE.Vector3(),w2=new THREE.Vector3();
-function proj(vec){vec.project(cam);const gr=host.getBoundingClientRect(),fr=fig.getBoundingClientRect();return [gr.left-fr.left+(vec.x*.5+.5)*gr.width,gr.top-fr.top+(-vec.y*.5+.5)*gr.height]}
+// layout is read once per frame, before any style write, so the frame never forces a second layout
+let geo={fw:0,fh:0,ox:0,oy:0,gw:1,gh:1},cueO='';
+function measure(){const fr=fig.getBoundingClientRect(),gr=host.getBoundingClientRect();geo={fw:fr.width,fh:fr.height,ox:gr.left-fr.left,oy:gr.top-fr.top,gw:gr.width,gh:gr.height}}
+function proj(vec){vec.project(cam);return [geo.ox+(vec.x*.5+.5)*geo.gw,geo.oy+(-vec.y*.5+.5)*geo.gh]}
 
 function setStep(step){if(step===active)return;active=step;
-  lis.forEach((li,i)=>li.classList.toggle('on',i===step));stepI.forEach((s,i)=>s.classList.toggle('on',i<=step));
+  lis.forEach((li,i)=>{li.classList.toggle('on',i===step);const h=li.querySelector('.h');if(h)h.setAttribute('aria-pressed',String(i===step))});stepI.forEach((s,i)=>s.classList.toggle('on',i<=step));
   parts.forEach((p,i)=>{const on=step>=0&&MAP[step].includes(i);p.edges.forEach(m=>{m.color.copy(on?SIG:INK);m.opacity=on?.95:.28});bals[i].classList.toggle('on',on)})}
 
 function frame(){
   if(!RM)requestAnimationFrame(frame);
+  place();
   if(!visible&&!RM)return;
-  t=(performance.now()-T0)/1000;if(HP!==null)P=HP;Ps=(RM||HP!==null)?P:Ps+(P-Ps)*.1;
+  if(mode!=='hero')measure();else{geo.gw=W();geo.gh=H()}
+  t=(performance.now()-T0)/1000;if(HP!==null)P=HP;
+  // a jump (menu link, reload mid-page) snaps the choreography instead of replaying the take-apart on the way
+  Ps=(RM||HP!==null||Math.abs(P-Ps)>.12)?P:Ps+(P-Ps)*.1;
   const mob=mobile();
-  // scroll choreography: hero out → take apart → six service steps → reassemble
-  const intro=RM?0:smooth(0,.09,Ps);
-  const assembleIn=RM?0:.35*(1-Math.min(1,t/1.6))**3; // on load the chamber closes up
-  eS=RM?1:smooth(.05,.24,Ps)*(1-smooth(.9,.985,Ps));let e=Math.max(assembleIn,eS);
-  const step=RM?-1:(Ps<.27?-1:Math.min(5,Math.floor((Ps-.27)/(.63/6))));
-  hero.style.opacity=RM?1:1-intro;hero.style.transform=RM?'':`translateY(${-intro*70}px)`;
-  tblock.style.opacity=cue.style.opacity=RM?1:1-intro;
-  const so=RM?1:smooth(.11,.22,Ps)*(1-smooth(.93,.99,Ps));svc.style.opacity=so;svc.style.transform=RM?'':`translateY(${(1-so)*30}px)`;svc.style.pointerEvents=so>.5?'auto':'none';steps.style.opacity=so;
-  setStep(step);
+  // hero: the chamber whole (it closes up once on load). Stage: take apart → six service steps → reassemble
+  const inHero=mode==='hero';
+  const assembleIn=RM?0:.35*(1-Math.min(1,t/1.6))**3;
+  eS=inHero?0:RM?1:smooth(.02,.16,Ps)*(1-smooth(.9,.985,Ps));let e=inHero?assembleIn:eS;
+  const step=inHero?-1:RM?picked:(Ps<S0?-1:Math.min(5,Math.floor((Ps-S0)/(SL/6))));
+  const co=RM?'1':String(+(1-smooth(0,.05,Ps)).toFixed(3));if(cue&&co!==cueO){cueO=co;cue.style.opacity=co} // write only on change: a style write per frame costs a style pass
+  setStep(step);emphasis(step);
   // mechanics that show what each service drives
   const s=step;
   spin+=(((s===4||s===5)?.55:0)-spin)*.03;blades.rotation.y+=RM?0:spin;
@@ -150,12 +190,13 @@ function frame(){
   parts.forEach((p,i)=>{p.obj.position.copy(p.base).addScaledVector(p.off,e)});
   parts[2].obj.position.y+=lift;
   // camera: slow idle orbit, pulls back when apart
-  const ca=.35+(RM?0:Math.sin(t*.12)*.22)+Ps*.6,dist=(mob?15:12.5)+e*4.5;
+  const ca=.35+(RM?0:Math.sin(t*.12)*.22)+(inHero?0:Ps*.6),dist=(mob?15:12.5)+e*4.5;
   cam.position.set(Math.cos(ca)*dist,4.2+e*1.4,Math.sin(ca)*dist);cam.lookAt(0,-.25-e*.1,0);
-  const w=W(),h=H();if(mob)cam.clearViewOffset();else cam.setViewOffset(w,h,e*w*.09,0,w,h);
+  const w=geo.gw,h=geo.gh;if(mob)cam.clearViewOffset();else cam.setViewOffset(w,h,e*w*.09,0,w,h);
   r.render(scene,cam);
+  if(inHero)return; // the drawing overlay (balloons, leaders) belongs to the stage
   // drawing overlay
-  const fr=fig.getBoundingClientRect(),colX=fr.width-(mob?0:270);
+  const fr={width:geo.fw,height:geo.fh},colX=fr.width-(mob?0:270);
   const a1=proj(w2.set(0,3.4,0).applyMatrix4(root.matrixWorld)),a2=proj(w2.set(0,-3.7,0).applyMatrix4(root.matrixWorld));
   axis.setAttribute('x1',a1[0]);axis.setAttribute('y1',a1[1]);axis.setAttribute('x2',a2[0]);axis.setAttribute('y2',a2[1]);axis.setAttribute('opacity',eS*.55);
   const pr=parts.map((p,i)=>{p.obj.getWorldPosition(v);const [x,y]=proj(v);const b=proj(w2.copy(p.base).applyMatrix4(root.matrixWorld));return {i,x,y,b}});
@@ -168,7 +209,7 @@ function frame(){
     const tr=traces[i];tr.setAttribute('x1',b[0]);tr.setAttribute('y1',b[1]);tr.setAttribute('x2',x);tr.setAttribute('y2',y);tr.setAttribute('opacity',parts[i].off.lengthSq()>0?eS*.45:0)});
 }
 frame();
-function resize(){r.setSize(W(),H());cam.aspect=W()/H();cam.updateProjectionMatrix();if(RM)frame()}
+function resize(){r.setSize(W(),H());parts.forEach(p=>p.fat.resolution.set(W(),H()));cam.aspect=W()/H();cam.updateProjectionMatrix();if(RM)frame()}
 addEventListener('resize',resize);
 if(RM)document.fonts.ready.then(frame);
 }
@@ -182,8 +223,8 @@ function sim(el,{tick,still}){
   const s={el,tick,still,on:false,paused:false,t:0};sims.push(s);
   if(!RMQ){
     const b=document.createElement('button');b.className='simpause';b.type='button';
-    const set=()=>{b.setAttribute('aria-label',s.paused?'Play animation':'Pause animation');b.innerHTML=`<svg class="i" aria-hidden="true"><use href="#${s.paused?'play':'pause'}"/></svg>`};
-    set();b.onclick=()=>{s.paused=!s.paused;set()};el.appendChild(b);
+    const set=()=>{b.setAttribute('aria-label',s.paused?T('ui.play','Play animation'):T('ui.pause','Pause animation'));b.innerHTML=`<svg class="i" aria-hidden="true"><use href="#${s.paused?'play':'pause'}"/></svg>`};
+    set();b.onclick=()=>{s.paused=!s.paused;set()};el.appendChild(b);addEventListener('hy:lang',set);
   }
   new IntersectionObserver(es=>{s.on=es[0].isIntersecting},{rootMargin:'80px'}).observe(el);
   if(RMQ&&still)still();
@@ -203,8 +244,11 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
   const el=document.getElementById('simChamber');if(!el)return;
   const st=[...el.querySelectorAll('.states li')],q=k=>el.querySelector(k);
   const P=q('#cP'),R=q('#cR'),A=q('#cA'),T=q('#cT'),cv=q('#cTrend'),ctx=cv.getContext('2d');
-  const ilk=k=>el.querySelector(`[data-k="${k}"]`);const hist=[];
-  function fit(){cv.width=cv.clientWidth*2;cv.height=cv.clientHeight*2}fit();addEventListener('resize',fit);
+  const ilk=k=>el.querySelector(`[data-k="${k}"]`);const hist=[],N=220,STEP=16/(N-1);let last=null,lastT=-1;
+  // the trend keeps one sample per STEP seconds, so it always shows one whole 16 s cycle (vent, pumpdown, process, vent)
+  const sample=(v,t)=>{if(lastT>=0&&t>=lastT&&t-lastT<STEP)return;lastT=t;hist.push(Math.log10(v.p));if(hist.length>N)hist.shift()};
+  function fit(){const w=Math.round(cv.clientWidth*2),h=Math.round(cv.clientHeight*2);if(w&&h&&(w!==cv.width||h!==cv.height)){cv.width=w;cv.height=h;if(last)draw(last)}}
+  fit();if('ResizeObserver'in window)new ResizeObserver(fit).observe(cv);else addEventListener('resize',fit);
   function state(c){ // c in 0..16 s
     let s,p,rf=0,ar=0,tc=22,turbo=false,gate=true;
     if(c<2){s=0;p=760}
@@ -217,13 +261,20 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
     st.forEach((li,i)=>li.classList.toggle('on',i===v.s));
     P.textContent=fmtP(v.p);R.textContent=Math.round(Math.max(0,v.rf));A.textContent=v.ar.toFixed(1);T.textContent=v.tc.toFixed(1);
     ilk('door').className='ok';ilk('water').className='ok';ilk('turbo').className=v.turbo?'ok':'wait';ilk('gate').className=v.gate?'ok':'wait';
-    hist.push(Math.log10(v.p));if(hist.length>220)hist.shift();
-    const w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='rgba(159,176,192,.18)';ctx.lineWidth=1;
-    for(let i=1;i<4;i++){const y=h*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+    last=v;
+    const w=cv.width,h=cv.height,T0=Math.min(64,h*.2),B0=h*.06,Y=lp=>T0+(1-(lp+6)/9)*(h-T0-B0);ctx.clearRect(0,0,w,h); // T0 keeps the trace below the box title
+    // decade grid lines with their pressure (log scale, 1e3 at the top to 1e-6 at the bottom)
+    ctx.lineWidth=1;ctx.font='500 24px "IBM Plex Mono",monospace';ctx.textAlign='right';ctx.textBaseline='bottom';
+    const marks=[[2,'100'],[0,'1'],[-3,'1e−3'],[-5,'1e−5']];
+    ctx.strokeStyle='rgba(159,176,192,.18)';
+    marks.forEach(([lp])=>{const y=Math.round(Y(lp))+.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()});
     ctx.strokeStyle='#4fa8ff';ctx.lineWidth=3;ctx.beginPath();
-    hist.forEach((lp,i)=>{const x=i/219*w,y=h-((lp+6)/9)*h;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+    hist.forEach((lp,i)=>{const x=i/(N-1)*w,y=Y(lp);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+    if(h>160)marks.forEach(([lp,l])=>{const y=Math.round(Y(lp)),tw=ctx.measureText(l).width; // labels on a navy chip, above the trace
+      ctx.fillStyle='#07121d';ctx.fillRect(w-tw-20,y-32,tw+16,30);ctx.fillStyle='rgba(159,176,192,.8)';ctx.fillText(l,w-12,y-4)});
   }
-  sim(el,{tick:(dt,t)=>draw(state(t%16)),still:()=>{for(let c=0;c<9.5;c+=.08)hist.push(Math.log10(state(c).p));draw(state(9.5))}});
+  for(let i=N-1;i>0;i--)hist.push(Math.log10(state(16-i*STEP).p)); // the previous cycle is already on the trend at first sight
+  sim(el,{tick:(dt,t)=>{const v=state(t%16);sample(v,t);draw(v)},still:()=>{hist.length=0;for(let c=0;c<16;c+=STEP)hist.push(Math.log10(state((c+9.5)%16).p));draw(state(9.5))}});
 })();
 
 
@@ -276,11 +327,11 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
   const INK='#09131f',BLUE='#0b6ac7';let paths=[],dots=[],L=[];
   function build(){
     while(svg.firstChild)svg.removeChild(svg.firstChild);
-    const mob=innerWidth<=900;
+    const fb=svg.getBoundingClientRect(),wide=Math.min(fb.width/1200,fb.height/310),tall=Math.min(fb.width/400,fb.height/620),mob=innerWidth<=900||tall>wide; // the drawing that shows larger in this frame
     const N=[[T('lp.n1','Your engineering team'),T('lp.n1s','Architecture · process')],[T('lp.n2','HYTEK · Ho Chi Minh City'),T('lp.n2s','Equipment software team')],[T('lp.n3','Your equipment'),T('lp.n3s','Lab · fab · field')]];
     const F=[[T('lp.f1','Your architecture & process'),0,1],[T('lp.f2','Software builds'),1,0],[T('lp.f3','Development to production'),1,2],[T('lp.f4','Support & troubleshooting'),2,1]];
     let box;
-    if(!mob){svg.setAttribute('viewBox','0 0 1200 400');box=i=>({x:30+i*420,y:140,w:300,h:120})}
+    if(!mob){svg.setAttribute('viewBox','0 45 1200 310');box=i=>({x:30+i*420,y:140,w:300,h:120})}
     else{svg.setAttribute('viewBox','0 0 400 620');box=i=>({x:60,y:20+i*230,w:280,h:120})}
     N.forEach(([a,b],i)=>{const r=box(i);mkS('rect',{x:r.x,y:r.y,width:r.w,height:r.h,fill:i===1?INK:'#fff',stroke:INK,'stroke-width':1.6},svg);
       const t1=mkS('text',{x:r.x+20,y:r.y+52,fill:i===1?'#fff':INK,'font-family':'Be Vietnam Pro','font-size':mob?19:21,'font-weight':700},svg);t1.textContent=a;
@@ -296,6 +347,7 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
   }
   function draw(t){paths.forEach((p,i)=>{const k=((t*.22+i*.33)%1);const pt=p.getPointAtLength(k*L[i]);dots[i].setAttribute('cx',pt.x);dots[i].setAttribute('cy',pt.y)})}
   build();addEventListener('hy:lang',()=>{build();draw(.4)});
+  let rz=0;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{build();draw(.4)},150)});
   sim(svg.parentElement,{tick:(dt,t)=>draw(t),still:()=>draw(.4)});
 })();
 

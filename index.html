@@ -17,22 +17,21 @@
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
 <link rel="shortcut icon" href="favicon.png?v=2">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6">
-<link rel="stylesheet" href="hub.css?v=6">
+<link rel="stylesheet" href="fonts.css?v=8">
+<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="hub.css?v=8">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-<script>if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm')</script>
+<script>(function(d){if(matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('rm');d.classList.add('hy-boot');addEventListener('load',function(){requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove('hy-boot')})})})})(document.documentElement)</script>
 <!-- classic defer scripts (not type=module) so the page also runs from file:// ; order matters: i18n first -->
-<script defer src="lang/vi-about.js?v=6"></script>
-<script defer src="lang/vi-hub.js?v=6"></script>
-<script defer src="site-map.js?v=6"></script>
-<script defer src="site.js?v=6"></script>
-<script defer src="i18n.js?v=6"></script>
-<script defer src="app.js?v=6"></script>
-<script defer src="gem-seq.js?v=6"></script>
-<script defer src="eq-kit.js?v=6"></script>
-<script defer src="equip.js?v=6"></script>
+<script defer blocking="render" src="lang/vi-about.js?v=8"></script>
+<script defer blocking="render" src="lang/vi-hub.js?v=8"></script>
+<script defer blocking="render" src="site-map.js?v=8"></script>
+<script defer blocking="render" src="site.js?v=8"></script>
+<script defer blocking="render" src="i18n.js?v=8"></script>
+<script defer blocking="render" src="app.js?v=8"></script>
+<script defer blocking="render" src="gem-seq.js?v=8"></script>
+<script defer blocking="render" src="eq-kit.js?v=8"></script>
+<script defer blocking="render" src="equip.js?v=8"></script>
 </head>
 <body data-section="about">
 
@@ -46,11 +45,11 @@
   <symbol id="rot" viewBox="0 0 16 16"><path d="M2 8c0-2 2.7-3.5 6-3.5s6 1.5 6 3.5-2.7 3.5-6 3.5M6 9.5l2 2-2 2"/></symbol>
 </svg>
 
-<template id="hy-nav"><a class="ul" href="#about" data-i18n="nav.about">About</a><a class="ul" href="#equipment" data-i18n="nav.equipment">Equipment</a><a class="ul" href="#services" data-i18n="nav.services">Services</a><a class="ul" href="#protocols" data-i18n="nav.protocols">Protocols</a><a class="ul" href="#gem" data-i18n="nav.gem">GEM / SECS</a><a class="ul" href="#simulator" data-i18n="nav.sim">Simulator</a><a class="ul" href="equipment/index.html" data-i18n="nav.hub">Knowledge hub</a><a class="ul cta" href="#contact" data-i18n="nav.contact">Contact</a></template>
+<template id="hy-nav"><a class="ul" href="#about" data-i18n="nav.about">About</a><a class="ul" href="#equipment" data-i18n="nav.equipment">Equipment</a><a class="ul" href="#services" data-i18n="nav.services">Services</a><a class="ul" href="#protocols" data-i18n="nav.protocols">Protocols</a><a class="ul" href="#gem" data-i18n="nav.gem">GEM / SECS</a><a class="ul" href="#simulator" data-i18n="nav.sim">Simulator</a><a class="ul ext" href="equipment/index.html" data-i18n="nav.hub">Knowledge hub</a><a class="ul cta" href="#contact" data-i18n="nav.contact">Contact</a></template>
 <div id="hy-header"></div>
 
 <main>
-<div id="stage">
+<section class="top" id="top">
   <div class="sticky">
     <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="hero" id="hero">
@@ -68,6 +67,63 @@
       <div><small data-i18n="st.3l">Industrial communication experience</small><b data-i18n="st.3v">10+ Protocols</b></div>
       <div><small data-i18n="st.4l">Factory automation integration</small><b>GEM / SECS</b></div>
     </div>
+    <div class="hfig" id="hfig"><div id="glHero"></div></div>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="sheet" data-i18n="about.label">ABOUT HYTEK</div>
+  <div class="grid">
+    <h2 data-i18n="about.h2">We understand the equipment behind the software.</h2>
+    <div class="txt">
+      <p data-i18n="about.p1">HYTEK SOLUTIONS VN COMPANY LIMITED is a Vietnam-based software engineering company specializing in semiconductor and advanced thin-film equipment.</p>
+      <p data-i18n="about.p2">Our engineering experience in this field dates back to 2003. We have developed and supported software across process chambers, wafer handling systems, loadlocks and integrated multi-chamber platforms.</p>
+      <p data-i18n="about.p3">Our work spans hardware integration, motion, vacuum, process control, recipes, HMI, alarms and interlocks, data logging, industrial communication, and GEM/SECS automation.</p>
+      <blockquote data-i18n="about.q">“Semiconductor equipment software requires more than general software development skills — engineers need to understand how software interacts with real equipment, processes and hardware.”</blockquote>
+    </div>
+    <div class="pics"><figure class="sim hmi" id="simChamber" aria-label="Simulated equipment HMI: a process chamber cycling through pumpdown, process and vent, with live readouts and interlocks" data-i18n-aria="aria.hmi">
+        <div class="hmi-top"><b>PM3 · PVD</b><span class="simtag" data-i18n="ui.sim">SIMULATION</span></div>
+        <ol class="states"><li>Idle</li><li>Pumpdown</li><li>Process</li><li>Vent</li></ol>
+        <div class="reads">
+          <div><small>Pressure</small><b id="cP">760</b><em>Torr</em></div>
+          <div><small>RF forward</small><b id="cR">0</b><em>W</em></div>
+          <div><small>Ar flow</small><b id="cA">0.0</b><em>sccm</em></div>
+          <div><small>Chuck</small><b id="cT">22.0</b><em>°C</em></div>
+        </div>
+        <div class="trendbox"><small>Chamber pressure · log scale</small><canvas id="cTrend"></canvas></div>
+        <ul class="ilk"><li data-k="door">Chamber door closed</li><li data-k="water">Cooling water flow</li><li data-k="turbo">Turbo pump at speed</li><li data-k="gate">Slit valve closed</li></ul>
+      </figure></div>
+  </div>
+</section>
+
+<section id="equipment">
+  <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="sheet" data-i18n="eq.label">EQUIPMENT EXPERIENCE</div>
+  <div class="sh"><h2 data-i18n="eq.h2">From individual chambers to multi-chamber platforms.</h2><p data-i18n="eq.p">Our experience covers the equipment control stack — from wafer handling and loadlocks to multiple process modules and factory automation.</p></div>
+  <div class="eqx">
+    <!-- each platform button may later carry data-glb="models/x.glb" or data-video="video/x.mp4" from the team's own 3D work; empty = built-in simulation -->
+    <div class="eqlist" role="group" aria-label="Equipment platforms" data-i18n-aria="aria.platforms">
+      <button class="pl" type="button" data-cfg="hc" data-ll="2" data-pm="6" aria-pressed="true"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p1.n">High-Capacity Cluster Platform</b><span class="s" data-i18n="p1.s">2 Loadlocks, 4–6 Process Chambers, integrated wafer handling and multi-process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+      <button class="pl" type="button" data-cfg="mc" data-ll="2" data-pm="3" aria-pressed="false"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p2.n">Mid-Capacity Cluster Platform</b><span class="s" data-i18n="p2.s">2 Loadlocks, 3 Process Chambers, with integrated handling and process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+      <button class="pl" type="button" data-cfg="pvd" data-ll="1" data-pm="3" aria-pressed="false"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p3.n">3-Chamber Integrated PVD System</b><span class="s" data-i18n="p3.s">1 Loadlock, 3 Process Chambers, with integrated PVD process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+      <button class="pl" type="button" data-cfg="sll" data-ll="1" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.handling">HANDLING</span><b data-i18n="p4.n">Single-Loadlock Wafer Handler</b><span class="s" data-i18n="p4.s">Integrated IBE / IBD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+      <button class="pl" type="button" data-cfg="mca" data-ll="3" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.handling">HANDLING</span><b data-i18n="p5.n">Multi-Cassette Automated Loader</b><span class="s" data-i18n="p5.s">Integrated IBE / IBD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+      <button class="pl hl" type="button" data-cfg="sps" data-ll="0" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.onep">ONE-PACKAGE SYSTEMS</span><b data-i18n="p6.n">Standalone Single-Package Systems</b><span class="s" data-i18n="p6.s">RIE &amp; Integrated PVD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
+    </div>
+    <figure class="eqview" id="eqView" aria-label="Simulation of the selected equipment platform: the wafer handling robot moves wafers between loadlocks and process chambers" data-i18n-aria="aria.eqview">
+      <div id="eqGl"></div>
+      <div class="eqhud"><b id="eqName">High-Capacity Cluster Platform</b><span id="eqState" class="data">—</span></div>
+      <div class="eqhint"><svg class="i" aria-hidden="true"><use href="#rot"/></svg><span data-i18n="eq.hint">Drag to rotate</span></div>
+    </figure>
+  </div>
+  <div class="chambers"><h3 data-i18n="eq.chips">Expanded Generic Names</h3><div class="chips"><span data-i18n="c1">Ion Beam Etching (IBE)</span><span data-i18n="c2">Ion Beam Deposition (IBD)</span><span data-i18n="c3">Physical Vapor Deposition (PVD)</span><span data-i18n="c4">Advanced PVD</span><span data-i18n="c5">Multi-Target PVD</span><span data-i18n="c6">High-Rate PVD (HRPVD)</span><span data-i18n="c7">Reactive Ion Etching (RIE)</span><span data-i18n="c8">Inline PVD Systems</span></div></div>
+</section>
+
+<div id="stage" data-scroll-skip>
+  <i class="snap" style="--p:0"></i><i class="snap" style="--p:.24"></i><i class="snap" style="--p:.36"></i><i class="snap" style="--p:.48"></i><i class="snap" style="--p:.6"></i><i class="snap" style="--p:.72"></i><i class="snap" style="--p:.84"></i>
+  <div class="sticky">
+    <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="cue" id="cue"><svg class="i"><use href="#arr-d"/></svg><span data-i18n="hero.cue">Scroll to take the chamber apart</span></div>
 
     <div class="fig" id="fig">
@@ -90,55 +146,6 @@
     </div>
   </div>
 </div>
-
-<section id="about" class="about">
-  <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="sheet" data-i18n="about.label">ABOUT HYTEK</div>
-  <div class="grid">
-    <h2 data-i18n="about.h2">We understand the equipment behind the software.</h2>
-    <div class="txt">
-      <p data-i18n="about.p1">HYTEK SOLUTIONS VN COMPANY LIMITED is a Vietnam-based software engineering company specializing in semiconductor and advanced thin-film equipment.</p>
-      <p data-i18n="about.p2">Our engineering experience in this field dates back to 2003. We have developed and supported software across process chambers, wafer handling systems, loadlocks and integrated multi-chamber platforms.</p>
-      <p data-i18n="about.p3">Our work spans hardware integration, motion, vacuum, process control, recipes, HMI, alarms and interlocks, data logging, industrial communication, and GEM/SECS automation.</p>
-      <blockquote data-i18n="about.q">“Semiconductor equipment software requires more than general software development skills — engineers need to understand how software interacts with real equipment, processes and hardware.”</blockquote>
-    </div>
-    <div class="pics"><figure class="sim hmi" id="simChamber" aria-label="Simulated equipment HMI: a process chamber cycling through pumpdown, process and vent, with live readouts and interlocks">
-        <div class="hmi-top"><b>PM3 · PVD</b><span class="simtag" data-i18n="ui.sim">SIMULATION</span></div>
-        <ol class="states"><li>Idle</li><li>Pumpdown</li><li>Process</li><li>Vent</li></ol>
-        <div class="reads">
-          <div><small>Pressure</small><b id="cP">760</b><em>Torr</em></div>
-          <div><small>RF forward</small><b id="cR">0</b><em>W</em></div>
-          <div><small>Ar flow</small><b id="cA">0.0</b><em>sccm</em></div>
-          <div><small>Chuck</small><b id="cT">22.0</b><em>°C</em></div>
-        </div>
-        <div class="trendbox"><small>Chamber pressure · log scale</small><canvas id="cTrend"></canvas></div>
-        <ul class="ilk"><li data-k="door">Chamber door closed</li><li data-k="water">Cooling water flow</li><li data-k="turbo">Turbo pump at speed</li><li data-k="gate">Slit valve closed</li></ul>
-      </figure></div>
-  </div>
-</section>
-
-<section id="equipment">
-  <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="sheet" data-i18n="eq.label">EQUIPMENT EXPERIENCE</div>
-  <div class="sh"><h2 data-i18n="eq.h2">From individual chambers to multi-chamber platforms.</h2><p data-i18n="eq.p">Our experience covers the equipment control stack — from wafer handling and loadlocks to multiple process modules and factory automation.</p></div>
-  <div class="eqx">
-    <!-- each platform button may later carry data-glb="models/x.glb" or data-video="video/x.mp4" from the team's own 3D work; empty = built-in simulation -->
-    <div class="eqlist" role="group" aria-label="Equipment platforms">
-      <button class="pl" type="button" data-cfg="hc" data-ll="2" data-pm="6" aria-pressed="true"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p1.n">High-Capacity Cluster Platform</b><span class="s" data-i18n="p1.s">2 Loadlocks, 4–6 Process Chambers, integrated wafer handling and multi-process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-      <button class="pl" type="button" data-cfg="mc" data-ll="2" data-pm="3" aria-pressed="false"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p2.n">Mid-Capacity Cluster Platform</b><span class="s" data-i18n="p2.s">2 Loadlocks, 3 Process Chambers, with integrated handling and process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-      <button class="pl" type="button" data-cfg="pvd" data-ll="1" data-pm="3" aria-pressed="false"><span class="t" data-i18n="tag.multi">MULTI-CHAMBER</span><b data-i18n="p3.n">3-Chamber Integrated PVD System</b><span class="s" data-i18n="p3.s">1 Loadlock, 3 Process Chambers, with integrated PVD process control.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-      <button class="pl" type="button" data-cfg="sll" data-ll="1" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.handling">HANDLING</span><b data-i18n="p4.n">Single-Loadlock Wafer Handler</b><span class="s" data-i18n="p4.s">Integrated IBE / IBD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-      <button class="pl" type="button" data-cfg="mca" data-ll="3" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.handling">HANDLING</span><b data-i18n="p5.n">Multi-Cassette Automated Loader</b><span class="s" data-i18n="p5.s">Integrated IBE / IBD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-      <button class="pl hl" type="button" data-cfg="sps" data-ll="0" data-pm="1" aria-pressed="false"><span class="t" data-i18n="tag.onep">ONE-PACKAGE SYSTEMS</span><b data-i18n="p6.n">Standalone Single-Package Systems</b><span class="s" data-i18n="p6.s">RIE &amp; Integrated PVD.</span><svg class="mini" viewBox="0 0 112 64" aria-hidden="true"></svg></button>
-    </div>
-    <figure class="eqview" id="eqView" aria-label="Simulation of the selected equipment platform: the wafer handling robot moves wafers between loadlocks and process chambers">
-      <div id="eqGl"></div>
-      <div class="eqhud"><b id="eqName">High-Capacity Cluster Platform</b><span id="eqState" class="data">—</span></div>
-      <div class="eqhint"><svg class="i" aria-hidden="true"><use href="#rot"/></svg><span data-i18n="eq.hint">Drag to rotate</span></div>
-    </figure>
-  </div>
-  <div class="chambers"><h3 data-i18n="eq.chips">Expanded Generic Names</h3><div class="chips"><span data-i18n="c1">Ion Beam Etching (IBE)</span><span data-i18n="c2">Ion Beam Deposition (IBD)</span><span data-i18n="c3">Physical Vapor Deposition (PVD)</span><span data-i18n="c4">Advanced PVD</span><span data-i18n="c5">Multi-Target PVD</span><span data-i18n="c6">High-Rate PVD (HRPVD)</span><span data-i18n="c7">Reactive Ion Etching (RIE)</span><span data-i18n="c8">Inline PVD Systems</span></div></div>
-</section>
 
 <section id="protocols" class="proto">
   <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -164,7 +171,7 @@
     <ul><li data-i18n="gem.l1">SECS communication and HSMS</li><li data-i18n="gem.l2">Equipment model and status variables</li><li data-i18n="gem.l3">Alarms and collection events</li><li data-i18n="gem.l4">Remote commands</li><li data-i18n="gem.l5">Recipe management</li><li data-i18n="gem.l6">Equipment and process data collection</li></ul>
     <div class="seqwrap">
       <button class="replay" id="gemCtl" type="button"><svg class="i" aria-hidden="true"><use href="#pause"/></svg><span>Pause exchange</span></button>
-      <svg id="seq" viewBox="0 0 700 520" role="img" aria-label="Message exchange between factory host and equipment: establish communications, host command, process start event, alarm report, process complete event."></svg>
+      <svg id="seq" viewBox="0 0 700 520" role="img" aria-label="Message exchange between factory host and equipment: establish communications, host command, process start event, alarm report, process complete event." data-i18n-aria="aria.seq"></svg>
     </div>
   </div>
 </section>
@@ -174,7 +181,7 @@
   <div class="sheet" data-i18n="sim.label">EQUIPMENT SIMULATION</div>
   <div class="sh"><h2 data-i18n="sim.h2">Equipment simulators for development, testing and training.</h2><p data-i18n="sim.p">Alongside equipment software, HYTEK builds simulators that stand in for real hardware — process chambers, wafer handling, devices and the factory host — so software can be developed, tested and demonstrated without waiting for the tool.</p></div>
   <div class="simgrid">
-    <figure class="sim draw" style="--ar:16/11" aria-label="The same equipment software runs against a HYTEK simulator or the real equipment through the same interfaces"><svg id="simSwitch" viewBox="0 0 720 495" aria-hidden="true"></svg></figure>
+    <figure class="sim draw" style="--ar:16/11" aria-label="The same equipment software runs against a HYTEK simulator or the real equipment through the same interfaces" data-i18n-aria="aria.simswitch"><svg id="simSwitch" viewBox="0 0 720 495" aria-hidden="true"></svg></figure>
     <div class="caps">
       <div><h3 data-i18n="sim.c1h">Virtual equipment</h3><p data-i18n="sim.c1p">Chambers, loadlocks, robots and process hardware modelled with realistic timing, states and responses.</p></div>
       <div><h3 data-i18n="sim.c2h">Device simulators</h3><p data-i18n="sim.c2p">MFCs, RF/DC power supplies, pumps, valves and controllers answering over the same protocols as the real devices.</p></div>
@@ -190,7 +197,7 @@
   <div class="cols" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="sheet" data-i18n="pa.label">ENGINEERING PARTNERSHIP</div>
   <div class="sh"><h2 data-i18n="pa.h2">Your engineering team in Vietnam.</h2><p data-i18n="pa.p">HYTEK supports equipment manufacturers and technology companies that need experienced software engineering capacity for semiconductor and thin-film equipment.</p></div>
-  <figure class="sim draw loop" aria-label="How the engagement runs: your engineering team, the HYTEK team in Ho Chi Minh City and your equipment"><svg id="simLoop" aria-hidden="true"></svg></figure>
+  <figure class="sim draw loop" aria-label="How the engagement runs: your engineering team, the HYTEK team in Ho Chi Minh City and your equipment" data-i18n-aria="aria.engage"><svg id="simLoop" aria-hidden="true"></svg></figure>
   <div class="models">
     <div><h3 data-i18n="pa.m1h">New Equipment Development</h3><p data-i18n="pa.m1p">Software engineering for new equipment platforms from early development through production.</p></div>
     <div><h3 data-i18n="pa.m2h">Existing Equipment Support</h3><p data-i18n="pa.m2p">Maintenance, troubleshooting, enhancements and long-term support for deployed systems.</p></div>
@@ -211,7 +218,7 @@
     <div class="card">
       <strong>HYTEK SOLUTIONS VN COMPANY LIMITED</strong>
       <span data-i18n="brand.tag">Engineering Software for Advanced Thin Film Systems</span>
-      <a class="ul" href="mailto:dat.do@hytekvn.com.vn">dat.do@hytekvn.com.vn</a>
+      <div class="mrow"><a class="ul" href="mailto:dat.do@hytekvn.com.vn">dat.do@hytekvn.com.vn</a><button type="button" class="copy" data-copy="dat.do@hytekvn.com.vn" data-i18n="ui.copy">Copy email</button><span class="sr-only" role="status"></span></div>
       <span>Lầu 3, Số 5 Đống Đa, Phường Tân Sơn Hòa, Hồ Chí Minh, Vietnam</span>
       <a class="btn" href="mailto:dat.do@hytekvn.com.vn?subject=Semiconductor%20Equipment%20Software%20Inquiry"><span data-i18n="ct.btn">Contact Our Engineering Team</span> <svg class="i" aria-hidden="true"><use href="#arr-ne"/></svg></a>
     </div>

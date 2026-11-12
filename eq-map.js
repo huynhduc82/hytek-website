@@ -59,26 +59,32 @@
     const root = opts.root || '', RM = document.documentElement.classList.contains('rm');
     const t = k => (w.HY_T ? w.HY_T(k, enT(k)) : enT(k));
     const parts = D().parts;
-    let sel = opts.select || 'process-chamber', paused = false, view3d = null, setPause = null;
+    let sel = opts.select === 'all' || parts.some(p => p.id === opts.select) ? opts.select : 'process-chamber', paused = false, view3d = null, setPause = null;
     el.classList.add('mp');
-    el.innerHTML = `<h2 class="sr-only mp-h"></h2><div class="mp-stage"><div class="mp-gl" role="img"></div><p class="mp-hint"></p></div>
+    el.innerHTML = `<h2 class="sr-only mp-h"></h2><div class="mp-stage" aria-busy="true"><div class="mp-gl" role="img"></div><p class="gl-wait" aria-hidden="true"></p><p class="mp-hint"></p></div>
 <div class="mp-side"><p class="mp-lbl"></p><ul class="mp-list"></ul><div class="mp-info" aria-live="polite"></div><p class="mp-note"></p></div>`;
     const $ = s => el.querySelector(s), list = $('.mp-list'), info = $('.mp-info'), stage = $('.mp-stage');
 
     function select(id, from3d) {
       sel = id;
       list.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.part === id)));
-      info.innerHTML = renderPartPanel(parts.find(p => p.id === id), root, t);
+      info.innerHTML = id === 'all' ? renderAllPanel() : renderPartPanel(parts.find(p => p.id === id), root, t);
       if (view3d) view3d.highlight(id);
       if (from3d && innerWidth <= 900) info.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'nearest' });
     }
+    function renderAllPanel() {
+      const pg = page('cluster-tool');
+      return `<div class="mp-panel" data-part="all"><h3>${esc(t('eq.all.name'))}</h3><p>${esc(t('eq.all.does'))}</p>
+  <a class="mp-more" href="${root}${pg.path}"><span>${esc(t('eq.lbl.more'))}</span>: <span>${esc(t(pg.key))}</span></a></div>`;
+    }
     function texts() {
-      list.innerHTML = renderPartList(parts, t);
+      list.innerHTML = `<li><button type="button" class="mp-part mp-all" data-part="all" aria-pressed="false"><span>${esc(t('eq.all'))}</span></button></li>` + renderPartList(parts, t);
       $('.mp-h').textContent = t('eq.lbl.map');
       $('.mp-lbl').textContent = t('eq.lbl.parts');
       if (setPause) setPause();
       $('.mp-note').textContent = t('eq.note');
       $('.mp-hint').textContent = t('eq.lbl.pick');
+      $('.gl-wait').textContent = t('eq.lbl.wait');
       $('.mp-gl').setAttribute('aria-label', t('eq.note'));
       select(sel);
     }
@@ -139,10 +145,26 @@
     const rob = K.robot(1.75 / 2 + .06); tagPart('wafer-robot', rob.g);
     const wafer = mesh(K.waferGeo, M.wafer); wafer.userData.noEdge = true; world.add(wafer);
 
-    ink(world);
-    const hi = {}; for (const id in groups) { hi[id] = new THREE.LineBasicMaterial({ color: K.C.blue, transparent: true, opacity: 0 }); groups[id].forEach(g => ink(g, hi[id])); }
-    let selected = null, hover = null;
-    const paint = () => { for (const id in hi) hi[id].opacity = id === selected ? .95 : id === hover ? .5 : 0; };
+    // per part: its own ink, blue edges (plus a faint x-ray set seen through what stands in front), tintable materials
+    // and a floor ring, so the selected part stands out while everything else stays as clear as before
+    const base = {}, hi = {}, xray = {}, tint = {}, marks = {};
+    for (const id in groups) {
+      base[id] = K.inkLine(); hi[id] = new THREE.LineBasicMaterial({ color: K.C.blue, transparent: true, opacity: 0 });
+      xray[id] = new THREE.LineBasicMaterial({ color: K.C.blue, transparent: true, opacity: 0, depthTest: false, depthWrite: false });
+      groups[id].forEach(g => { ink(g, base[id]); ink(g, hi[id]); ink(g, xray[id]); });
+      tint[id] = groups[id].map(g => K.tintable(g));
+      marks[id] = groups[id].map(g => { const m = K.marker(g); world.add(m); return m; });
+    }
+    let selected = null, hover = null, pulse = 0; // selected 'all': every part as built, nothing faded, no blue
+    const ringPulse = () => (o.RM ? 0 : (1 - Math.cos(pulse * Math.PI * 2 / 2.6)) / 2);
+    const rings = () => { for (const id in marks) marks[id].forEach(m => m.userData.show(id === selected ? 1 : 0, ringPulse())); };
+    const paint = () => { const all = selected === 'all', fade = !!selected && !all; for (const id in groups) {
+      const lv = id === selected ? 2 : id === hover ? 1 : 0;
+      tint[id].forEach(x => x.set(lv, fade && !lv));
+      base[id].opacity = lv === 2 ? 0 : fade && !lv ? .1 : .22;
+      hi[id].opacity = lv === 2 ? 1 : lv === 1 && !all ? .55 : 0;
+      xray[id].opacity = lv === 2 ? .28 : 0;
+    } rings(); };
 
     // camera frames the whole scene
     const sph = new THREE.Box3().setFromObject(world).getBoundingSphere(new THREE.Sphere());
@@ -152,7 +174,7 @@
     // picking: click/tap without drag
     const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
     const pick = e => { const b = r.domElement.getBoundingClientRect(); ptr.set((e.clientX - b.left) / b.width * 2 - 1, -(e.clientY - b.top) / b.height * 2 + 1); ray.setFromCamera(ptr, cam);
-      const hit = ray.intersectObjects(world.children, true).find(h => h.object.isMesh && h.object.userData.part); return hit ? hit.object.userData.part : null; };
+      const hit = ray.intersectObjects(world.children, true).find(h => h.object.isMesh && h.object.userData.part && !h.object.userData.pickThrough); return hit ? hit.object.userData.part : null; };
     let down = null;
     r.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
     r.domElement.addEventListener('pointerup', e => { if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 6) { const id = pick(e); if (id) o.onPick(id); } down = null; });
@@ -180,10 +202,10 @@
     function draw() { r.render(scene, cam); }
     let visible = true, last = performance.now();
     new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { rootMargin: '60px' }).observe(host);
-    function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000); last = now; if (!visible) return; if (!o.isPaused()) step(dt); controls.update(); draw(); }
+    function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000); last = now; if (!visible) return; if (!o.isPaused()) { step(dt); pulse += dt; rings(); } controls.update(); draw(); }
     if (o.RM) { controls.addEventListener('change', draw); draw(); } else requestAnimationFrame(loop);
     addEventListener('resize', () => { r.setSize(W(), H()); cam.aspect = W() / H(); cam.updateProjectionMatrix(); frame(); if (o.RM) draw(); });
-    stage.classList.add('ready');
+    stage.classList.add('ready'); stage.removeAttribute('aria-busy');
     return { highlight(id) { selected = id; paint(); if (o.RM) draw(); } };
   }
 

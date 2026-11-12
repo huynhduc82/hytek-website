@@ -25,5 +25,8 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'sg.p2': 'Phiên đã kết nối nhưng không bao giờ được chọn: không có dữ liệu nào đi qua, và T7 sẽ đóng nó.',
   'sg.p3': 'Không chép system bytes vào câu trả lời, hoặc gửi câu trả lời khi W-bit không được bật.',
   'sg.p4': 'Gửi báo cáo sự kiện trước khi host định nghĩa và bật chúng.',
-  'sg.p5': 'Nhầm trạng thái truyền thông (đường truyền có thông không?) với trạng thái điều khiển (online hay offline, local hay remote).'
+  'sg.p5': 'Nhầm trạng thái truyền thông (đường truyền có thông không?) với trạng thái điều khiển (online hay offline, local hay remote).',
+  'sg.aria.states': 'Các trạng thái HSMS',
+  'sg.aria.frame': 'Bản tin HSMS: 4 byte độ dài, 10 byte header, phần thân SECS-II',
+  'sg.aria.item': 'Item SECS-II: byte định dạng, 1 đến 3 byte độ dài, dữ liệu'
 });

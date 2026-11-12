@@ -41,31 +41,45 @@ btns.forEach(b=>b.addEventListener('click',()=>{
 /* pause control, same as the other simulations */
 let paused=false;
 if(!RM){const pb=document.createElement('button');pb.type='button';pb.className='simpause';
-  const set=()=>{pb.setAttribute('aria-label',paused?'Play animation':'Pause animation');pb.innerHTML=`<svg class="i" aria-hidden="true"><use href="#${paused?'play':'pause'}"/></svg>`};
-  set();pb.onclick=()=>{paused=!paused;set()};view.appendChild(pb)}
+  const set=()=>{pb.setAttribute('aria-label',paused?T('ui.play','Play animation'):T('ui.pause','Pause animation'));pb.innerHTML=`<svg class="i" aria-hidden="true"><use href="#${paused?'play':'pause'}"/></svg>`};
+  set();pb.onclick=()=>{paused=!paused;set()};view.appendChild(pb);addEventListener('hy:lang',set)}
+
+/* loading line while Three.js arrives; replaced by a plain message when WebGL is missing */
+const wait=document.createElement('p');wait.className='gl-wait';wait.setAttribute('aria-hidden','true');view.appendChild(wait);
+let glFailed=false;
+const waitText=()=>{wait.textContent=glFailed?T('ui.gl.fail','The 3D model could not load. Check the connection or try another browser.'):T('ui.gl.wait','Loading 3D model…')};
+waitText();addEventListener('hy:lang',waitText);view.setAttribute('aria-busy','true');
 
 let started=false;
-function start(){if(started)return;started=true;removeEventListener('scroll',near);init().catch(e=>{console.warn('HYTEK: platform viewer unavailable',e);view.classList.add('fail');stateEl.textContent=''})}
+function start(){if(started)return;started=true;removeEventListener('scroll',near);init().then(()=>{view.classList.add('ready');view.removeAttribute('aria-busy')}).catch(e=>{console.warn('HYTEK: platform viewer unavailable',e);glFailed=true;waitText();view.classList.add('fail');view.removeAttribute('aria-busy');stateEl.textContent=''})}
 function near(){const b=view.getBoundingClientRect();if(b.top<innerHeight+300&&b.bottom>-300)start()}
 new IntersectionObserver(es=>{if(es[0].isIntersecting)start()},{rootMargin:'300px'}).observe(view);
 addEventListener('scroll',near,{passive:true});near();
+// build the viewer while the visitor reads the hero, so its setup and shader compile never land in the middle of a scroll
+const later=f=>'requestIdleCallback' in window?requestIdleCallback(f,{timeout:2500}):setTimeout(f,1200);
+if(document.readyState==='complete')later(start);else addEventListener('load',()=>later(start));
+const idle=()=>new Promise(res=>'requestIdleCallback' in window?requestIdleCallback(()=>res(),{timeout:400}):setTimeout(res,16));
 
 async function init(){
   const THREE=await import('three');
   const {RoomEnvironment}=await import('three/addons/environments/RoomEnvironment.js');
   const {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+  // thick outline for the active station (plain WebGL lines are always 1px)
+  const [{LineSegments2},{LineSegmentsGeometry},{LineMaterial}]=await Promise.all([import('three/addons/lines/LineSegments2.js'),import('three/addons/lines/LineSegmentsGeometry.js'),import('three/addons/lines/LineMaterial.js')]);
   const W=()=>view.clientWidth,H=()=>view.clientHeight;
   const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(2,devicePixelRatio));r.setSize(W(),H());glHost.appendChild(r.domElement);
   r.toneMapping=THREE.ACESFilmicToneMapping;
   const scene=new THREE.Scene();scene.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
+  await idle();
   scene.add(new THREE.HemisphereLight(0xffffff,0x8fa0b0,1.5));
   const sun=new THREE.DirectionalLight(0xffffff,2.0);sun.position.set(5,9,6);scene.add(sun);
   const cam=new THREE.PerspectiveCamera(30,W()/H(),.1,200);
   const controls=new OrbitControls(cam,r.domElement);
   controls.enableZoom=false;controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.08;
-  controls.minPolarAngle=.35;controls.maxPolarAngle=1.3;controls.autoRotate=!RM;controls.autoRotateSpeed=.55;
-  let resumeT=0;controls.addEventListener('start',()=>{controls.autoRotate=false;clearTimeout(resumeT)});
-  controls.addEventListener('end',()=>{if(!RM)resumeT=setTimeout(()=>controls.autoRotate=true,4000)});
+  controls.minPolarAngle=.35;controls.maxPolarAngle=1.3;
+  // the camera turns toward the station the robot is working on; a drag hands control to the visitor for 4 s
+  let follow=!RM,focus=null,resumeT=0;controls.addEventListener('start',()=>{follow=false;clearTimeout(resumeT)});
+  controls.addEventListener('end',()=>{if(!RM)resumeT=setTimeout(()=>follow=true,4000)});
 
   const K=window.HY_EQKIT(THREE);
   const {C,M,mesh,inkLine,ink,waferGeo,processChamber,ionBeamChamber,loadlock,cassette,transferChamber,robot,dressCluster}=K;
@@ -75,8 +89,8 @@ async function init(){
   const minJerk=x=>x<=0?0:x>=1?1:x*x*x*(10-15*x+6*x*x);
   const angDiff=(a,b)=>{let d=b-a;return ((d+Math.PI*3)%(Math.PI*2))-Math.PI};
   function clear(){
-    if(root){scene.remove(root);root.traverse(o=>{if(o.geometry&&o.geometry!==waferGeo)o.geometry.dispose()})}
-    labels.forEach(l=>l.d.remove());labels=[];stations=[];seq=[];si=0;st=0;rob=null;extra=null;carry=false;procGlow=null;
+    if(root){scene.remove(root);root.traverse(o=>{if(o.geometry&&o.geometry!==waferGeo)o.geometry.dispose();if(o.material&&o.material.userData&&o.material.userData.tintClone)o.material.dispose()})}
+    labels.forEach(l=>l.d.remove());labels=[];stations=[];focus=null;seq=[];si=0;st=0;rob=null;extra=null;carry=false;procGlow=null;
     if(videoEl){videoEl.remove();videoEl=null}r.domElement.style.display='';
   }
   function label(text,obj,yTop,opt){const d=document.createElement('div');d.className='eqlbl'+(opt?' opt':'');d.textContent=text;view.appendChild(d);labels.push({d,obj,y:yTop});return d}
@@ -85,7 +99,7 @@ async function init(){
     const L=layoutCluster(cfg),n=cfg==='hc'?8:cfg==='mc'?6:cfg==='pvd'?4:0;
     const ap=cfg==='hc'?1.05:cfg==='mc'?.8:cfg==='pvd'?.75:.4;
     if(n)root.add(transferChamber(n,ap,cfg==='pvd'?.5:0));
-    else{const tb=mesh(new THREE.BoxGeometry(.9,.32,.9),M.steelD,[0,.46,0]);root.add(tb);const lid=mesh(new THREE.BoxGeometry(.86,.02,.86),M.glass,[0,.64,0]);lid.userData.noEdge=true;root.add(lid);root.add(mesh(new THREE.BoxGeometry(.9,.3,.9),M.frame,[0,.15,0]))}
+    else root.add(transferChamber(4,.45,.5)); // square transfer box between loadlock and chamber, same see-through walls
     L.forEach(s=>{
       const unit=s.kind==='ll'?loadlock():s.kind==='ib'?ionBeamChamber():processChamber(s.opt);
       const depth=s.kind==='ll'?.4:s.kind==='ib'?.62:.7,D=ap+depth;
@@ -131,7 +145,7 @@ async function init(){
     for(let i=0;i<3;i++)gas.add(mesh(new THREE.BoxGeometry(.12,.22,.12),i===1?M.blue:M.steelD,[.26,.75,-.25+i*.25]));gas.position.set(1.35,0,0);root.add(gas);
     // lid hinge on the back edge of the chamber
     const lidPivot=new THREE.Group();lidPivot.position.set(.2,1.07,-.66);root.add(lidPivot);
-    lidPivot.add(mesh(new THREE.CylinderGeometry(.68,.68,.06,56),M.steel,[0,0,.66]),mesh(new THREE.CylinderGeometry(.28,.28,.22,32),M.steelD,[0,.14,.66]),mesh(new THREE.TorusGeometry(.33,.03,8,40),M.copper,[0,.08,.66],[Math.PI/2,0,0]));
+    lidPivot.add(mesh(new THREE.CylinderGeometry(.68,.68,.06,56),M.shell,[0,0,.66]),mesh(new THREE.CylinderGeometry(.28,.28,.22,32),M.shellD,[0,.14,.66]),mesh(new THREE.TorusGeometry(.33,.03,8,40),M.copper,[0,.08,.66],[Math.PI/2,0,0]));
     const s={name:T('eq.chamber','Process chamber'),kind:'pm',unit:pc};s.lbl=label('RIE / PVD',pc.g,1.45);stations.push(s);
     label('Rack',rack,1.95);label('Gas',gas,1.15);
     extra={lidPivot};
@@ -160,7 +174,11 @@ async function init(){
     const cfg=b.dataset.cfg;
     if(cfg==='mca')buildLoader();else if(cfg==='sps')buildStandalone();else buildCluster(cfg);
     inkMats=[ink(root)];
-    stations.forEach(s=>{s.inkMat=new THREE.LineBasicMaterial({color:C.blue,transparent:true,opacity:0});ink(s.unit.g,s.inkMat)});
+    stations.forEach(s=>{s.inkMat=new THREE.LineBasicMaterial({color:C.blue,transparent:true,opacity:0});ink(s.unit.g,s.inkMat);s.tint=K.tintable(s.unit.g);s.mark=K.marker(s.unit.g);s.markF=0;s.markOn=false;root.add(s.mark);
+      s.xray=new THREE.LineBasicMaterial({color:C.blue,transparent:true,opacity:0,depthTest:false,depthWrite:false});ink(s.unit.g,s.xray);
+      s.fat=new LineMaterial({color:C.blue,linewidth:2,transparent:true,opacity:0,depthWrite:false});s.fat.visible=false;s.fat.userData.tintClone=true;s.fat.resolution.set(W(),H());
+      const ms=[];s.unit.g.traverse(o=>{if(o.isMesh&&!o.userData.noEdge)ms.push(o)}); // LineSegments2 is a Mesh too: collect first
+      ms.forEach(o=>{const l=new LineSegments2(new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(o.geometry,28)),s.fat);l.userData.noEdge=true;o.add(l)})});
     theta=stations[0]&&stations[0].a!=null?stations[0].a:0;reach=.35;trackX=stations[0]&&stations[0].x!=null?stations[0].x:0;
     if(rob){rob.g.rotation.y=-theta;rob.g.position.x=trackX;rob.pose(reach)}
     frameCamera();
@@ -177,7 +195,8 @@ async function init(){
     st=0;from={theta,reach,trackX,lid:extra?extra.lidPivot.rotation.x:0};
     const lab=a.lab||({home:'HOMING',rot:'ROTATE → '+(a.s&&a.s.name),ext:'EXTEND → '+(a.s&&a.s.name),pick:'PICK '+(a.s&&a.s.name),place:'PLACE '+(a.s&&a.s.name),ret:'RETRACT',proc:'PROCESS '+(a.s&&a.s.name),move:'TRACK → X '+(a.x!=null?a.x.toFixed(1):'')}[a.t]||'');
     stateEl.textContent=lab;
-    stations.forEach(s=>{const on=a.s===s||Boolean(a.via&&a.via===s);if(s.inkMat)s.inkMat.opacity=on?.9:0;if(s.lbl)s.lbl.classList.toggle('on',on)});
+    if(a.s&&a.s.unit)focus=a.s;
+    stations.forEach(s=>{const on=a.s===s||Boolean(a.via&&a.via===s);if(s.inkMat)s.inkMat.opacity=on?1:0;if(s.tint)s.tint.set(on?2:0);s.markOn=on;if(RM&&s.mark){s.markF=on?1:0;showMark(s)}if(s.lbl)s.lbl.classList.toggle('on',on)});
     if(a.t==='proc'&&a.s&&a.s.lbl)a.s.lbl.classList.add('on');
     if(a.t==='pick')carry=true;
   }
@@ -210,18 +229,30 @@ async function init(){
   }
 
   /* ---------- render loop ---------- */
-  const v=new THREE.Vector3();let visible=true,last=performance.now();
-  new IntersectionObserver(es=>{visible=es[0].isIntersecting},{rootMargin:'60px'}).observe(view);
+  const v=new THREE.Vector3();let visible=true,last=performance.now(),SW=W(),SH=H();
+  new ResizeObserver(()=>{SW=W();SH=H()}).observe(view); // size read on resize, not in every frame
+  new IntersectionObserver(es=>{visible=es[0].isIntersecting}).observe(view); // only while on screen (see app.js onScreen)
   function draw(){
     r.render(scene,cam);
-    const vw=W(),vh=H();
+    const vw=SW,vh=SH;
     labels.forEach(l=>{v.set(0,l.y,0);l.obj.localToWorld(v);v.project(cam);l.d.style.left=((v.x*.5+.5)*vw)+'px';l.d.style.top=((-v.y*.5+.5)*vh)+'px';l.d.style.display=v.z<1?'':'none'});
   }
   function render(){controls.update();draw()}
+  let pulse=0;const sph=new THREE.Spherical(),off=new THREE.Vector3(),fp=new THREE.Vector3();
+  function showMark(s){const p=RM?0:(1-Math.cos(pulse*Math.PI*2/2.6))/2;s.mark.userData.show(s.markF,p);s.fat.opacity=s.markF;s.fat.visible=s.markF>.01;s.xray.opacity=.3*s.markF}
+  function follow3d(dt){ // ease the camera's azimuth to a three-quarter view of the focused station
+    if(!follow||!focus)return;focus.unit.g.getWorldPosition(fp);const t=controls.target;
+    if(Math.hypot(fp.x-t.x,fp.z-t.z)<.3)return;
+    off.copy(cam.position).sub(t);sph.setFromVector3(off);
+    const want=Math.atan2(fp.x-t.x,fp.z-t.z)+.55;sph.theta+=angDiff(sph.theta,want)*Math.min(1,dt*1.1);
+    off.setFromSpherical(sph);cam.position.copy(t).add(off)}
   function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;if(!visible)return;
-    if(!RM&&!paused)step(dt);render()}
-  if(!RM)requestAnimationFrame(loop);else{controls.enableDamping=false;controls.addEventListener('change',draw)}
-  addEventListener('resize',()=>{r.setSize(W(),H());cam.aspect=W()/H();cam.updateProjectionMatrix();frameCamera();if(RM)render()});
-  api={load};load(current);
+    if(!RM&&!paused){step(dt);pulse+=dt;follow3d(dt);stations.forEach(s=>{if(!s.mark)return;const k=Math.min(1,dt*7);s.markF+=((s.markOn?1:0)-s.markF)*k;showMark(s)})}render()}
+  addEventListener('resize',()=>{r.setSize(W(),H());stations.forEach(s=>{if(s.fat)s.fat.resolution.set(W(),H())});cam.aspect=W()/H();cam.updateProjectionMatrix();frameCamera();if(RM)render()});
+  api={load};await idle();load(current);
+  // compile every shader off the main thread where the browser can, before the first frame draws
+  await idle();if(r.compileAsync)await r.compileAsync(scene,cam);else r.compile(scene,cam);
+  await idle();render(); // first use of each program (driver checks) happens now, not on the first scrolled frame
+  if(!RM)requestAnimationFrame(loop);else{controls.enableDamping=false;controls.addEventListener('change',draw);render()}
 }
 })();

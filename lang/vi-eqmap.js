@@ -14,6 +14,6 @@ window.HY_VI = Object.assign(window.HY_VI || {}, {
   'eq.sig.digital': 'I/O số', 'eq.sig.analog': 'I/O tương tự', 'eq.sig.serial': 'Nối tiếp', 'eq.sig.network': 'Mạng',
   'eq.layer.driver': 'Driver thiết bị', 'eq.layer.sequence': 'Điều khiển trình tự', 'eq.layer.interlock': 'Khóa liên động và an toàn', 'eq.layer.gem': 'GEM / tích hợp host',
   'eq.lbl.signals': 'Tín hiệu', 'eq.lbl.protocols': 'Giao thức thường dùng', 'eq.lbl.layer': 'Tầng phần mềm', 'eq.lbl.example': 'Ví dụ sự kiện',
-  'eq.lbl.parts': 'Bộ phận', 'eq.lbl.map': 'Bản đồ thiết bị', 'eq.lbl.pause': 'Tạm dừng hoạt cảnh', 'eq.lbl.play': 'Phát hoạt cảnh', 'eq.lbl.pick': 'Chọn một bộ phận', 'eq.lbl.more': 'Đọc thêm',
+  'eq.lbl.parts': 'Bộ phận', 'eq.lbl.map': 'Bản đồ thiết bị', 'eq.lbl.pause': 'Tạm dừng hoạt cảnh', 'eq.lbl.play': 'Phát hoạt cảnh', 'eq.lbl.pick': 'Chọn một bộ phận', 'eq.lbl.wait': 'Đang tải mô hình 3D…', 'eq.all': 'Tất cả', 'eq.all.name': 'Toàn bộ cluster tool', 'eq.all.does': 'Xem tất cả bộ phận cùng lúc. Chọn một bộ phận để xem nó làm gì, giao tiếp bằng gì và tầng phần mềm nào điều khiển nó.', 'eq.lbl.more': 'Đọc thêm',
   'eq.note': 'Góc nhìn khái niệm về một cluster tool điển hình. Các ví dụ là tự đặt.'
 });
