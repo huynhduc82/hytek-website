@@ -162,8 +162,12 @@ function setStep(step){if(step===active)return;active=step;
   lis.forEach((li,i)=>{li.classList.toggle('on',i===step);const h=li.querySelector('.h');if(h)h.setAttribute('aria-pressed',String(i===step))});stepI.forEach((s,i)=>s.classList.toggle('on',i<=step));
   parts.forEach((p,i)=>{const on=step>=0&&MAP[step].includes(i);p.edges.forEach(m=>{m.color.copy(on?SIG:INK);m.opacity=on?.95:.28});bals[i].classList.toggle('on',on)})}
 
-function frame(){
+// a 120–240 Hz screen calls this up to 240 times a second; drawing every one of them keeps a laptop GPU busy and the
+// page scroll stutters (measured). The scene draws at most ~80 times a second, the same motion as on a 60 Hz screen.
+const MIN_DT=12;let lastDraw=-1e9;
+function frame(now){
   if(!RM)requestAnimationFrame(frame);
+  if(now!==undefined){if(now-lastDraw<MIN_DT)return;lastDraw=now}
   place();
   if(!visible&&!RM)return;
   if(mode!=='hero')measure();else{geo.gw=W();geo.gh=H()}
@@ -211,6 +215,9 @@ function frame(){
 frame();
 function resize(){r.setSize(W(),H());parts.forEach(p=>p.fat.resolution.set(W(),H()));cam.aspect=W()/H();cam.updateProjectionMatrix();if(RM)frame()}
 addEventListener('resize',resize);
+// the hero frame can still be 0 px tall when the renderer starts (its layout settles later): re-fit whenever a host
+// frame changes size, so the chamber draws on first sight instead of only after a trip to the stage and back
+if('ResizeObserver' in window){const ro=new ResizeObserver(()=>resize());[glHero,glStage].forEach(el=>el&&ro.observe(el))}
 if(RM)document.fonts.ready.then(frame);
 }
 chamber3D().catch(err=>{console.warn('HYTEK: 3D chamber unavailable, showing the static layout',err);document.documentElement.classList.add('rm','no3d')});
@@ -332,7 +339,7 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
     const F=[[T('lp.f1','Your architecture & process'),0,1],[T('lp.f2','Software builds'),1,0],[T('lp.f3','Development to production'),1,2],[T('lp.f4','Support & troubleshooting'),2,1]];
     let box;
     if(!mob){svg.setAttribute('viewBox','0 45 1200 310');box=i=>({x:30+i*420,y:140,w:300,h:120})}
-    else{svg.setAttribute('viewBox','0 0 400 620');box=i=>({x:60,y:20+i*230,w:280,h:120})}
+    else{svg.setAttribute('viewBox',innerWidth<=900?'0 -44 400 664':'0 0 400 620');box=i=>({x:60,y:20+i*230,w:280,h:120})}
     N.forEach(([a,b],i)=>{const r=box(i);mkS('rect',{x:r.x,y:r.y,width:r.w,height:r.h,fill:i===1?INK:'#fff',stroke:INK,'stroke-width':1.6},svg);
       const t1=mkS('text',{x:r.x+20,y:r.y+52,fill:i===1?'#fff':INK,'font-family':'Be Vietnam Pro','font-size':mob?19:21,'font-weight':700},svg);t1.textContent=a;
       const t2=mkS('text',{x:r.x+20,y:r.y+84,fill:i===1?'#9fb0c0':'#586676','font-family':'IBM Plex Mono','font-size':14},svg);t2.textContent=b});
@@ -357,14 +364,16 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
   const INK='#09131f',BLUE='#0b6ac7',MUTE='#586676';let lever,dotA,dotB,pathSim,pathReal,simBox,realBox,lenS,lenR;
   function txt(x,y,s,o={}){const t=mkS('text',Object.assign({x,y,fill:INK,'font-family':'Be Vietnam Pro','font-size':18,'font-weight':700},o),svg);t.textContent=s;return t}
   let G;
+  // a title longer than its box (Vietnamese runs longer) steps its size down until it fits
+  const fit=(t,max)=>{let f=+t.getAttribute('font-size');while(f>11&&t.getComputedTextLength()>max){f-=.5;t.setAttribute('font-size',f)}return t};
   function build(){
     while(svg.firstChild)svg.removeChild(svg.firstChild);
     const mob=innerWidth<=900;
-    G=mob?{vb:'0 0 400 600',sw:[40,10,320,150],swT:[60,48],ifc:[100,196,200,124],sim:[8,382,188,150],real:[204,382,188,150],piv:[200,345],aSim:125,aReal:55,
+    G=mob?{vb:'0 -62 400 662',sw:[40,10,320,150],swT:[60,48],ifc:[100,196,200,124],sim:[8,382,188,150],real:[204,382,188,150],piv:[200,345],aSim:125,aReal:55,
            ps:'M200 320 L200 345 C 200 360, 102 360, 102 382',pr:'M200 320 L200 345 C 200 360, 298 360, 298 382',link:[200,160,200,196],fs:15,ls:13,lh:22}
           :{vb:'0 0 720 495',sw:[24,150,220,190],swT:[44,196],ifc:[290,170,140,150],sim:[496,56,204,150],real:[496,290,204,150],piv:[452,245],aSim:-45,aReal:45,
            ps:'M430 245 C 466 245, 460 131, 496 131',pr:'M430 245 C 466 245, 460 365, 496 365',link:[244,245,290,245],fs:14,ls:12,lh:24};
-    svg.setAttribute('viewBox',G.vb);svg.parentElement.style.setProperty('--ar',mob?'400/600':'16/11');
+    svg.setAttribute('viewBox',G.vb);svg.parentElement.style.setProperty('--ar',mob?'400/662':'16/11');
     const [sx,sy,sw,sh]=G.sw;mkS('rect',{x:sx,y:sy,width:sw,height:sh,fill:INK},svg);
     txt(G.swT[0],G.swT[1],T('sw.sw','Equipment software'),{fill:'#fff','font-size':19});
     ['Control · Recipe','HMI · Alarms','GEM/SECS'].forEach((t,i)=>txt(G.swT[0],G.swT[1]+38+i*28,t,{fill:'#9fb0c0','font-family':'IBM Plex Mono','font-size':14,'font-weight':500}));
@@ -373,7 +382,7 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e�
     ['Modbus · Serial','TCP/IP','DeviceNet','SECS/GEM'].forEach((t,i)=>txt(icx,iy+58+i*19,t,{'text-anchor':'middle',fill:MUTE,'font-family':'IBM Plex Mono','font-size':12,'font-weight':500}));
     mkS('line',{x1:G.link[0],y1:G.link[1],x2:G.link[2],y2:G.link[3],stroke:INK,'stroke-width':2},svg);
     const box=(b,title,lines)=>{const r=mkS('rect',{x:b[0],y:b[1],width:b[2],height:b[3],fill:'#fff',stroke:INK,'stroke-width':1.6},svg);
-      txt(b[0]+14,b[1]+38,title,{'font-size':mob?15.5:18});lines.forEach((t,i)=>txt(b[0]+16,b[1]+68+i*G.lh,t,{fill:MUTE,'font-size':G.fs-1,'font-weight':500}));return r};
+      fit(txt(b[0]+14,b[1]+38,title,{'font-size':mob?15.5:18}),b[2]-28);lines.forEach((t,i)=>txt(b[0]+16,b[1]+68+i*G.lh,t,{fill:MUTE,'font-size':G.fs-1,'font-weight':500}));return r};
     simBox=box(G.sim,T('sw.sim','HYTEK simulator'),[T('sw.s1','Virtual chambers · robot'),T('sw.s2','Device & I/O models'),T('sw.s3','Fault injection')]);
     realBox=box(G.real,T('sw.real','Real equipment'),[T('sw.r1','Chambers · robot'),T('sw.r2','Devices · PLC · I/O'),T('sw.r3','Factory host')]);
     pathSim=mkS('path',{d:G.ps,fill:'none',stroke:INK,'stroke-width':1.4,'stroke-dasharray':'5 5'},svg);

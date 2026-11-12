@@ -246,7 +246,8 @@ async function init(){
     off.copy(cam.position).sub(t);sph.setFromVector3(off);
     const want=Math.atan2(fp.x-t.x,fp.z-t.z)+.55;sph.theta+=angDiff(sph.theta,want)*Math.min(1,dt*1.1);
     off.setFromSpherical(sph);cam.position.copy(t).add(off)}
-  function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;if(!visible)return;
+  // at most ~80 draws a second: on a 120–240 Hz screen a draw on every refresh keeps the GPU busy and the page scroll stutters (see app.js)
+  function loop(now){requestAnimationFrame(loop);if(now-last<12)return;const dt=Math.min(.05,(now-last)/1000);last=now;if(!visible)return;
     if(!RM&&!paused){step(dt);pulse+=dt;follow3d(dt);stations.forEach(s=>{if(!s.mark)return;const k=Math.min(1,dt*7);s.markF+=((s.markOn?1:0)-s.markF)*k;showMark(s)})}render()}
   addEventListener('resize',()=>{r.setSize(W(),H());stations.forEach(s=>{if(s.fat)s.fat.resolution.set(W(),H())});cam.aspect=W()/H();cam.updateProjectionMatrix();frameCamera();if(RM)render()});
   api={load};await idle();load(current);

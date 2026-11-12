@@ -161,6 +161,15 @@ test('3D canvases draw only on screen; the platform viewer warms up early', () =
   assert.match(eq, /compileAsync/);
 });
 
+// On 120–240 Hz screens a 3D draw on every refresh saturated a laptop GPU and the page scroll stuttered:
+// both scenes skip refreshes that come sooner than ~12 ms after their last draw.
+test('3D scenes cap their draw rate on high-refresh screens', () => {
+  const app = read(path.join(ROOT, 'app.js')), eq = read(path.join(ROOT, 'equip.js'));
+  assert.match(app, /function frame\(now\)\{\s*if\(!RM\)requestAnimationFrame\(frame\);\s*if\(now!==undefined\)\{if\(now-lastDraw<MIN_DT\)return;lastDraw=now\}/);
+  assert.match(app, /const MIN_DT=12;/);
+  assert.match(eq, /function loop\(now\)\{requestAnimationFrame\(loop\);if\(now-last<12\)return;/);
+});
+
 // Desktop wheel scrolling stops on whole screens: every section, and inside the chamber stage the whole chamber
 // plus each of the six service steps (the stops must sit where app.js puts the steps).
 test('landing: wheel stops on whole screens, stage stops match the service steps', () => {

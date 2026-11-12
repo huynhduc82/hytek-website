@@ -25,7 +25,7 @@ svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.6;stroke
 .cols i{border-left:1px solid var(--rule)}.cols i:last-child{border-right:1px solid var(--rule)}
 
 /* ---------- controls ---------- */
-.btn{display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:0 20px;font:600 14px var(--display);text-decoration:none;background:var(--ink);color:var(--paper);
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:8px 20px;line-height:1.3;font:600 14px var(--display);text-decoration:none;background:var(--ink);color:var(--paper);
   transition:transform .18s var(--ease),box-shadow .18s var(--ease),background-color .18s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 6px 14px -6px rgba(9,19,31,.45)}
 .btn:active{transform:translateY(0) scale(.98);box-shadow:none;transition-duration:.08s}
@@ -66,6 +66,7 @@ header nav a.ul.on{background-size:100% 1.5px} /* the section on screen, same un
 .top{position:relative;height:100vh;padding:0}
 .hfig{position:absolute;right:0;top:0;width:58%;height:100%;z-index:1}
 .hfig canvas{display:block}
+#glHero{position:absolute;inset:0} /* the renderer reads this frame's size: it must fill the figure, not wait for its canvas */
 #stage{position:relative;height:400vh} /* a whole number of screens, so every section after it starts on a screen boundary */
 .sticky{position:sticky;top:0;height:100vh;overflow:hidden}
 .fig{position:absolute;inset:0}
@@ -250,7 +251,7 @@ section{position:relative;padding:128px var(--pad) 120px}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:28px var(--pad);background:#040b12;color:#8c9aaa;font-size:13px}
 .foot b{display:block;font:900 20px var(--display);font-stretch:118%;color:#fff}
 .foot a{color:#9cc4ec}
-@media (max-width:900px){.sim.loop{aspect-ratio:400/620}.hmi{font-size:13px;aspect-ratio:auto}.trendbox{flex:none;height:110px}.reads b{font-size:19px}}
+@media (max-width:900px){.sim.loop{aspect-ratio:400/664}.hmi{font-size:13px;aspect-ratio:auto}.trendbox{flex:none;height:110px}.reads b{font-size:19px}}
 @media (max-width:560px){.rcp th:nth-child(5),.rcp td:nth-child(5){display:none}}
 .no3d #gl,.no3d .hfig,.no3d #leads,.no3d .bal{display:none}
 
@@ -262,7 +263,7 @@ section{position:relative;padding:128px var(--pad) 120px}
 .lang svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.3}
 .hero .kick{font:600 13px var(--display);letter-spacing:.08em;color:var(--sig-ink);margin-bottom:14px}
 .hero .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:20px;font:600 13px var(--display);color:var(--mute)}
-.hero .meta span+span::before{content:'';display:inline-block;width:5px;height:5px;background:var(--sig);margin-right:18px;vertical-align:middle}
+.hero .meta{margin-left:-23px;clip-path:inset(-6px -6px -6px 23px)}.hero .meta span::before{content:'';display:inline-block;width:5px;height:5px;background:var(--sig);margin-right:18px;vertical-align:middle} /* every item carries its square; the one that starts a line sits in the clipped strip, so a wrapped line never begins with a stray square */
 .sheet{position:relative;z-index:1;display:flex;align-items:center;gap:14px;font:700 13px var(--display);letter-spacing:.08em;color:var(--ink);margin-bottom:34px}
 .sheet::after{content:'';flex:1;height:1.5px;background:var(--ink)}
 .gem .sheet{color:var(--paper)}.gem .sheet::after{background:#3a4a5a}
@@ -445,7 +446,7 @@ body[data-section="contact"] .contact .from{margin-bottom:clamp(12px,2.5vh,28px)
   .partner .sh p{margin-top:clamp(14px,2.4vh,24px);max-width:46ch}
   :lang(vi) .partner .sh p{margin-top:clamp(20px,3vh,28px)}
   .partner .sim.loop{grid-column:2;grid-row:2;aspect-ratio:auto;min-height:0;margin:0 0 clamp(14px,2.5vh,28px);border:0;background:none}
-  .partner .sim.loop svg{position:absolute;inset:0;width:100%;height:100%}
+  .partner .sim.loop>svg{position:absolute;inset:0;width:100%;height:100%}
   .partner .models{grid-column:1/-1;grid-row:3;margin:0;border:1.5px solid var(--ink);background:var(--paper)}
   .partner .models div{padding:10px 14px 12px;border-right:0;border-left:1px solid var(--ink)}
   .partner .models div:first-child{border-left:0}.partner .models div+div{padding-left:14px}
@@ -484,10 +485,10 @@ body[data-section="contact"] .contact .from{margin-bottom:clamp(12px,2.5vh,28px)
 
   /* Equipment: platform list under the heading (only the selected row shows its description), the 3D viewer down the
      right, the generic names as the bottom band */
-  #equipment .eqlist{grid-column:1;grid-row:3;align-self:start;position:relative;z-index:1}
+  #equipment .eqlist{grid-column:1;grid-row:3;align-self:stretch;display:flex;flex-direction:column;margin-bottom:clamp(14px,2.4vh,28px);position:relative;z-index:1}#equipment .pl{flex:1 1 auto;align-content:center}
   #equipment .pl{padding-top:clamp(7px,1.2vh,14px);padding-bottom:clamp(7px,1.2vh,14px)}
   #equipment .pl b{font-size:clamp(18px,1.5vw,23px)}
-  #equipment .pl .mini{height:clamp(30px,4.4vh,46px);width:auto}
+  #equipment .pl .mini{height:clamp(26px,3.6vh,46px);width:auto}
   #equipment .pl:not([aria-pressed="true"]) .s{display:none}
   #equipment .eqview{grid-column:2;grid-row:2/4;position:relative;top:0;height:auto;min-height:0;margin:0 0 clamp(14px,2.4vh,28px)}
   #equipment .chambers{grid-column:1/-1;grid-row:4;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
@@ -513,15 +514,16 @@ body[data-section="contact"] .contact .from{margin-bottom:clamp(12px,2.5vh,28px)
 
   /* Simulator: heading and intro on the left, the switch diagram down the right, the six capabilities as the bottom band */
   #simulator .simgrid>figure{grid-column:2;grid-row:2/4;aspect-ratio:auto;min-height:0;margin:0 0 clamp(14px,2.4vh,28px)}
-  #simulator .simgrid>figure svg{position:absolute;inset:0;width:100%;height:100%}
+  #simulator .simgrid>figure>svg{position:absolute;inset:0;width:100%;height:100%}
   #simulator .caps{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px;position:relative;z-index:1}
   #simulator .caps div{padding:clamp(6px,1vh,12px) 0}
   #simulator .caps h3{font-size:clamp(17px,1.3vw,20px)}
   #simulator .caps p{font-size:clamp(12.5px,.9vw,14px);line-height:1.4}
 }
-@media (min-width:901px) and (min-height:620px) and (max-height:860px){#equipment .pl:not([aria-pressed="true"]) .t{display:none}} /* shorter screens: the unselected rows show their name only */
-@media (min-width:901px) and (min-height:620px){#equipment{grid-template-columns:minmax(0,47%) minmax(0,1fr)}#equipment>.sh h2{font-size:clamp(38px,min(4.3vw,7.6vh),78px)}#equipment .chips span{padding:4px 9px;font-size:13px}} /* Equipment: a wider word column keeps the heading on two lines */
-@media (min-width:901px) and (min-height:620px) and (max-height:800px){#equipment .pl{padding-top:5px;padding-bottom:5px}#equipment .pl b{font-size:17px}#equipment .pl .mini{height:28px}#equipment .pl .s{font-size:13px;line-height:1.4}} /* short laptop screens */
+@media (min-width:901px) and (min-height:620px) and (max-height:940px){#equipment .pl:not([aria-pressed="true"]) .t{display:none}} /* shorter screens: the unselected rows show their name only */
+@media (min-width:901px) and (min-height:620px){#equipment{grid-template-columns:minmax(0,47%) minmax(0,1fr)}#equipment>.sh h2{font-size:clamp(38px,min(4.3vw,7.6vh),78px)}#equipment .chips span{padding:5px 10px;font-size:13px}} /* Equipment: a wider word column keeps the heading on two lines */
+@media (min-width:901px) and (min-height:620px) and (max-height:800px){#equipment .pl{padding-top:4px;padding-bottom:4px}#equipment .pl b{font-size:17px}#equipment .pl .mini{height:24px}#equipment .pl .s{font-size:13px;line-height:1.4}} /* short laptop screens */
+@media (min-width:901px) and (min-height:620px) and (max-height:700px){#equipment>.sh{margin-bottom:10px}#equipment .pl .mini{height:20px}#equipment>.sh h2{font-size:clamp(34px,min(4.3vw,6.6vh),78px)}#equipment .chambers{gap:6px 12px}#equipment .chambers h3{font-size:12px}#equipment .chips{gap:4px}#equipment .chips span{padding:3px 7px;font-size:12px}} /* short laptops: heading, intro gap and the names band give way so list, viewer and band share the screen */
 @media (min-width:901px) and (min-height:620px){@container (max-width:720px){#protocols .r{grid-template-columns:minmax(0,4fr) minmax(0,5fr);row-gap:4px;align-items:start}#protocols .r .t{grid-column:1;grid-row:1}#protocols .r h3{grid-column:1;grid-row:2}#protocols .r p{grid-column:2;grid-row:1/3}}} /* a narrow table: the group label sits above the protocol name, so the description gets the width and the table stays inside one screen */
 @media (min-width:901px) and (min-height:620px) and (max-height:680px),(min-width:901px) and (max-width:1100px) and (min-height:620px){#about>.grid{grid-template-columns:minmax(0,53%) minmax(0,1fr)}} /* short or narrow windows: a wider text column keeps the text inside the screen */
 @media (min-width:901px) and (min-height:620px) and (max-height:820px){#about .hmi .ilk{grid-template-columns:1fr 1fr;column-gap:12px}} /* short laptops: the four interlocks in two columns */
@@ -544,3 +546,13 @@ body[data-section="contact"] .contact .from{margin-bottom:clamp(12px,2.5vh,28px)
   body:not([data-section="contact"]) #contact h2{font-size:clamp(44px,min(7.4vw,10.5vh),124px)}
   body:not([data-section="contact"]) #contact .cp{margin-top:14px}
 }
+/* The background column lines (.cols: 12 equal columns across the content box) are the grid the boxes sit on: a framed
+   visual starts on a line (line 7 = half way, line 8 = 7/12), the protocols card ends on line 6 and the simulator band's
+   three columns start on lines 1, 5 and 9. The gap is taken from the words column, never from the framed box. */
+@media (min-width:901px) and (min-height:620px){
+  #about>.grid,#equipment,#simulator{--cg:clamp(24px,3vw,56px);grid-template-columns:minmax(0,calc(50% - var(--cg))) minmax(0,1fr);column-gap:var(--cg)}
+  #protocols{grid-template-columns:minmax(0,calc(500% / 12)) minmax(0,1fr)}
+  #simulator .caps{column-gap:0}#simulator .caps div{margin-right:28px}#simulator .caps div:nth-child(3n){margin-right:0}
+  .cgrid{grid-template-columns:minmax(0,calc(700% / 12 - 40px)) minmax(0,1fr);column-gap:40px}
+}
+@media (min-width:901px) and (min-height:620px) and (max-height:680px),(min-width:901px) and (max-width:1100px) and (min-height:620px){#about>.grid{grid-template-columns:minmax(0,calc(700% / 12 - var(--cg))) minmax(0,1fr)}} /* short or narrow windows: the wider text column ends at line 8 */
