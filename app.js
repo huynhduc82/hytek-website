@@ -378,11 +378,11 @@ const fmtP=p=>p>=1?Math.round(p).toString():p.toExponential(1).replace('e-','e鈭
     txt(G.swT[0],G.swT[1],T('sw.sw','Equipment software'),{fill:'#fff','font-size':19});
     ['Control 路 Recipe','HMI 路 Alarms','GEM/SECS'].forEach((t,i)=>txt(G.swT[0],G.swT[1]+38+i*28,t,{fill:'#9fb0c0','font-family':'IBM Plex Mono','font-size':14,'font-weight':500}));
     const [ix,iy,iw,ih]=G.ifc,icx=ix+iw/2;mkS('rect',{x:ix,y:iy,width:iw,height:ih,fill:'#fff',stroke:INK,'stroke-width':1.6},svg);
-    txt(icx,iy+32,T('sw.if','Same interfaces'),{'text-anchor':'middle','font-size':15});
+    fit(txt(icx,iy+32,T('sw.if','Same interfaces'),{'text-anchor':'middle','font-size':15}),iw-20);
     ['Modbus 路 Serial','TCP/IP','DeviceNet','SECS/GEM'].forEach((t,i)=>txt(icx,iy+58+i*19,t,{'text-anchor':'middle',fill:MUTE,'font-family':'IBM Plex Mono','font-size':12,'font-weight':500}));
     mkS('line',{x1:G.link[0],y1:G.link[1],x2:G.link[2],y2:G.link[3],stroke:INK,'stroke-width':2},svg);
     const box=(b,title,lines)=>{const r=mkS('rect',{x:b[0],y:b[1],width:b[2],height:b[3],fill:'#fff',stroke:INK,'stroke-width':1.6},svg);
-      fit(txt(b[0]+14,b[1]+38,title,{'font-size':mob?15.5:18}),b[2]-28);lines.forEach((t,i)=>txt(b[0]+16,b[1]+68+i*G.lh,t,{fill:MUTE,'font-size':G.fs-1,'font-weight':500}));return r};
+      fit(txt(b[0]+14,b[1]+38,title,{'font-size':mob?15.5:18}),b[2]-28);lines.forEach((t,i)=>fit(txt(b[0]+16,b[1]+68+i*G.lh,t,{fill:MUTE,'font-size':G.fs-1,'font-weight':500}),b[2]-30));return r};
     simBox=box(G.sim,T('sw.sim','HYTEK simulator'),[T('sw.s1','Virtual chambers 路 robot'),T('sw.s2','Device & I/O models'),T('sw.s3','Fault injection')]);
     realBox=box(G.real,T('sw.real','Real equipment'),[T('sw.r1','Chambers 路 robot'),T('sw.r2','Devices 路 PLC 路 I/O'),T('sw.r3','Factory host')]);
     pathSim=mkS('path',{d:G.ps,fill:'none',stroke:INK,'stroke-width':1.4,'stroke-dasharray':'5 5'},svg);

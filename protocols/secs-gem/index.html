@@ -15,19 +15,19 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="../../favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="../../favicon.png?v=2">
-<link rel="stylesheet" href="../../fonts.css?v=9">
-<link rel="stylesheet" href="../../styles.css?v=9">
-<link rel="stylesheet" href="../../hub.css?v=9">
+<link rel="stylesheet" href="../../fonts.css?v=10">
+<link rel="stylesheet" href="../../styles.css?v=10">
+<link rel="stylesheet" href="../../hub.css?v=10">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script>(function(d){if(matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('rm');d.classList.add('hy-boot');addEventListener('load',function(){requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove('hy-boot')})})})})(document.documentElement)</script>
-<script defer blocking="render" src="../../lang/vi-hub.js?v=9"></script>
-<script defer blocking="render" src="../../lang/vi-secs-gem.js?v=9"></script>
-<script defer blocking="render" src="../../lang/vi-eqmap.js?v=9"></script>
-<script defer blocking="render" src="../../site-map.js?v=9"></script>
-<script defer blocking="render" src="../../site.js?v=9"></script>
-<script defer blocking="render" src="../../i18n.js?v=9"></script>
-<script defer blocking="render" src="../../gem-seq.js?v=9"></script>
-<script defer blocking="render" src="hsms.js?v=9"></script>
+<script defer blocking="render" src="../../lang/vi-hub.js?v=10"></script>
+<script defer blocking="render" src="../../lang/vi-secs-gem.js?v=10"></script>
+<script defer blocking="render" src="../../lang/vi-eqmap.js?v=10"></script>
+<script defer blocking="render" src="../../site-map.js?v=10"></script>
+<script defer blocking="render" src="../../site.js?v=10"></script>
+<script defer blocking="render" src="../../i18n.js?v=10"></script>
+<script defer blocking="render" src="../../gem-seq.js?v=10"></script>
+<script defer blocking="render" src="hsms.js?v=10"></script>
 </head>
 <body data-section="protocols" data-kind="protocol" data-page="secs-gem">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="pause" viewBox="0 0 16 16"><path d="M5 3v10M11 3v10"/></symbol><symbol id="play" viewBox="0 0 16 16"><path d="M5 3l8 5-8 5z"/></symbol></svg>
@@ -42,7 +42,7 @@
   <h2 data-i18n="hub.s.definition">What it is</h2>
   <div>
     <ol class="stack">
-      <li><b>GEM</b> <span class="std">SEMI E30</span><p data-i18n="sg.d.gem">What the equipment must do: communication and control states, collection events, alarms, status variables, remote commands and recipe handling. The behaviour a host can count on from every tool.</p></li>
+      <li><b>GEM</b> <span class="std">SEMI E30</span><p data-i18n="sg.d.gem">What a GEM tool provides: communication and control states, collection events, alarms, status variables, remote commands and recipe handling. A small core (the state models, event reporting, online identification) is required on every GEM-compliant tool; the other capabilities are standard but optional.</p></li>
       <li><b>SECS-II</b> <span class="std">SEMI E5</span><p data-i18n="sg.d.secs">The language: messages named by stream and function (S1F13, S6F11…), with a body built from typed items such as lists, ASCII text and unsigned integers.</p></li>
       <li><b>HSMS</b> <span class="std">SEMI E37</span><p data-i18n="sg.d.hsms">The transport: carries SECS-II messages over TCP/IP, with a 10-byte header and a small set of control messages to open, check and close the session. (The older SECS-I, SEMI E4, does the same over RS-232.)</p></li>
     </ol>
@@ -66,21 +66,21 @@
         <li data-state="SELECTED">CONNECTED · SELECTED</li>
       </ol>
       <div class="hs-btns">
-        <button type="button" class="chip" data-ev="connect">TCP connect</button>
+        <button type="button" class="chip" data-ev="connect" data-i18n="sg.b.connect">TCP connect</button>
         <button type="button" class="chip" data-ev="select">Select</button>
         <button type="button" class="chip" data-ev="linktest">Linktest</button>
         <button type="button" class="chip" data-ev="deselect">Deselect</button>
         <button type="button" class="chip" data-ev="separate">Separate</button>
-        <button type="button" class="chip" data-ev="t7">T7 timeout</button>
-        <button type="button" class="chip" data-ev="close">TCP close</button>
+        <button type="button" class="chip" data-ev="t7" data-i18n="sg.b.t7">T7 timeout</button>
+        <button type="button" class="chip" data-ev="close" data-i18n="sg.b.close">TCP close</button>
         <button type="button" class="chip ghost" data-ev="reset" data-i18n="sg.sim.reset">Reset</button>
       </div>
       <ol class="hs-log" aria-live="polite"></ol>
     </div>
-    <p class="note" data-i18n="sg.sim.note">The equipment waits as the passive side. After TCP connects, the host must select the session before T7 runs out; only a selected session carries data messages.</p>
+    <p class="note" data-i18n="sg.sim.note">The equipment usually waits as the passive side. After TCP connects, the host must select the session before T7 runs out; only a selected session carries data messages. Deselect is not used in HSMS-SS, the single-session form most equipment runs.</p>
     <h3 class="sub" data-i18n="sg.sim.h2">A typical exchange</h3>
     <div class="gembox">
-      <button class="replay" id="gemCtl" type="button"><svg class="i" aria-hidden="true"><use href="#pause"/></svg><span>Pause exchange</span></button>
+      <button class="replay" id="gemCtl" type="button"><svg class="i" aria-hidden="true"><use href="#pause"/></svg><span>Pause animation</span></button>
       <svg id="seq" viewBox="0 0 700 520" role="img" aria-label="Message exchange between factory host and equipment: establish communications, host command, process start event, alarm report, process complete event." data-i18n-aria="aria.seq"></svg>
     </div>
   </div>
@@ -89,19 +89,19 @@
   <h2 data-i18n="hub.s.anatomy">Message anatomy</h2>
   <div>
     <div class="frame" role="img" aria-label="HSMS message: 4-byte length, 10-byte header, SECS-II body" data-i18n-aria="sg.aria.frame">
-      <span class="f-len">Length<small>4 B</small></span>
+      <span class="f-len" data-i18n="sg.f.len4">Length<small>4 B</small></span>
       <span>Session ID<small>2 B</small></span>
       <span>W · Stream<small>1 B</small></span>
       <span>Function<small>1 B</small></span>
       <span>PType<small>1 B</small></span>
       <span>SType<small>1 B</small></span>
       <span class="f-sys">System bytes<small>4 B</small></span>
-      <span class="f-body">SECS-II body<small>0…n B</small></span>
+      <span class="f-body" data-i18n="sg.f.body">SECS-II body<small>0…n B</small></span>
     </div>
     <div class="frame item" role="img" aria-label="SECS-II item: format byte, 1 to 3 length bytes, data" data-i18n-aria="sg.aria.item">
-      <span>Format · 6 bit<small>+ length count · 2 bit</small></span>
-      <span>Length<small>1–3 B</small></span>
-      <span class="f-body">Data / nested items<small>n B</small></span>
+      <span data-i18n="sg.f.fmt">Format · 6 bit<small>+ number of length bytes · 2 bit</small></span>
+      <span data-i18n="sg.f.len3">Length<small>1–3 B</small></span>
+      <span class="f-body" data-i18n="sg.f.data">Data / nested items<small>n B</small></span>
     </div>
     <p data-i18n="sg.anat">The header says who the message is for, which stream and function it is, whether a reply is wanted (W-bit) and which request a reply answers (system bytes). The body is a tree of items; a list counts its items, every other format counts its bytes.</p>
     <p><a class="ul" href="../../tools/secs-decoder/index.html" data-i18n="sg.anat.link">Paste real bytes into the SECS-II / HSMS decoder</a></p>
@@ -114,10 +114,10 @@
     <dt>W-bit</dt><dd data-i18n="sg.t.w">Set on a primary message when the sender wants a reply.</dd>
     <dt>System bytes</dt><dd data-i18n="sg.t.sys">A number chosen by the sender and copied into the reply, so replies can be matched to requests.</dd>
     <dt>Select / Linktest</dt><dd data-i18n="sg.t.sel">HSMS control messages: open the session for data, and check that the other side is still alive.</dd>
-    <dt>T3 · T7</dt><dd data-i18n="sg.t.tim">Timers: T3 is how long to wait for a reply; T7 is how long a new connection may stay unselected.</dd>
-    <dt>Collection event</dt><dd data-i18n="sg.t.ce">Something that happened on the tool (a state change, a process step) that the host can ask to be told about, with chosen data attached as a report.</dd>
-    <dt>Alarm</dt><dd data-i18n="sg.t.al">A condition reported when it is set and again when it clears.</dd>
-    <dt>Remote command</dt><dd data-i18n="sg.t.rc">A command from the host such as start or stop, accepted or rejected by the tool.</dd>
+    <dt>T3 · T6 · T7</dt><dd data-i18n="sg.t.tim">Timers: T3 is how long to wait for the reply to a data message (control messages use T6); T7 is how long a new connection may stay unselected.</dd>
+    <dt data-i18n="sg.dt.ce">Collection event</dt><dd data-i18n="sg.t.ce">Something that happened on the tool (a state change, a process step) that the host can ask to be told about, with chosen data attached as a report.</dd>
+    <dt data-i18n="sg.dt.al">Alarm</dt><dd data-i18n="sg.t.al">A condition reported when it is set and again when it clears.</dd>
+    <dt data-i18n="sg.dt.rc">Remote command</dt><dd data-i18n="sg.t.rc">A command from the host such as start or stop (S2F41, also called host command), accepted or rejected by the tool.</dd>
   </dl>
 </section>
 <section class="slot" data-slot="pitfalls">
@@ -126,7 +126,7 @@
     <li data-i18n="sg.p1">Replies that arrive after T3: the sender has already given up, so the late reply is an error, not an answer.</li>
     <li data-i18n="sg.p2">A session that is connected but never selected: no data flows, and T7 closes it.</li>
     <li data-i18n="sg.p3">System bytes not copied into the reply, or a reply sent when the W-bit was not set.</li>
-    <li data-i18n="sg.p4">Event reports sent before the host has defined and enabled them.</li>
+    <li data-i18n="sg.p4">Sending S6F11 for an event the host has not enabled, or with reports the host has not linked to it.</li>
     <li data-i18n="sg.p5">Mixing up the communication state (is the link up?) with the control state (online or offline, local or remote).</li>
   </ul>
 </section>

@@ -30,7 +30,7 @@ const T=(k,en)=>(window.HY_T?window.HY_T(k,en):en);
     rows.forEach((r,i)=>{const p=Math.max(0,Math.min(1,(tt-i*per)/(per*.75))),e=1-Math.pow(1-p,3);
       r.g.setAttribute('opacity',p>0?fade:0);r.L.setAttribute('x2',r.x1+(r.x2-r.x1)*e);r.A.setAttribute('opacity',p>=1?1:0)});
   }
-  function setBtn(){lab.textContent=paused?T('gem.play','Play exchange'):T('gem.pause','Pause exchange');use.setAttribute('href',paused?'#play':'#pause')}
+  function setBtn(){lab.textContent=paused?T('gem.play','Play animation'):T('gem.pause','Pause animation');use.setAttribute('href',paused?'#play':'#pause')}
   function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-(last||now))/1000);last=now;
     if(!on||paused)return;t=(t+dt)%TOTAL;frame(t)}
   if(rm){frame(M.length*per+.5);btn.hidden=true}

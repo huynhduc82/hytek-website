@@ -139,7 +139,7 @@ test('landing page: one menu bar (original anchors + Knowledge hub), no extra hu
 test('every page loads the current styles.css and hub.css (same cache key)', () => {
   for (const f of pages) {
     const all = [...read(f).matchAll(/href="((?:\.\.\/)*(?:styles|hub)\.css\?v=\d+)"/g)].map(m => m[1].replace(/^(\.\.\/)+/, ''));
-    assert.deepEqual(all.sort(), ['hub.css?v=9', 'styles.css?v=9'], rel(f));
+    assert.deepEqual(all.sort(), ['hub.css?v=10', 'styles.css?v=10'], rel(f));
   }
 });
 

@@ -21,6 +21,9 @@
   const tr = (k, en) => (w.HY_T ? w.HY_T(k, en) : en);
   let state = 'NOT_CONNECTED';
   const log = el.querySelector('.hs-log');
+  const LOGK = { 'TCP connected · T7 started': 'sg.log.conn', 'T7 timeout · TCP closed': 'sg.log.t7', 'TCP closed': 'sg.log.close' };
+  const say = li => { const k = LOGK[li.dataset.en]; li.textContent = k ? tr(k, li.dataset.en) : li.dataset.en; };
+  w.addEventListener('hy:lang', () => log.querySelectorAll('li').forEach(say));
   function show() {
     el.querySelectorAll('[data-state]').forEach(n => { const on = n.dataset.state === state; n.classList.toggle('on', on); if (on) n.setAttribute('aria-current', 'step'); else n.removeAttribute('aria-current'); });
     el.querySelectorAll('button[data-ev]').forEach(b => { b.disabled = b.dataset.ev !== 'reset' && next(state, b.dataset.ev).log === 'ignored'; });
@@ -29,7 +32,7 @@
     const b = e.target.closest('button[data-ev]'); if (!b) return;
     if (b.dataset.ev === 'reset') { state = 'NOT_CONNECTED'; log.innerHTML = ''; show(); return; }
     const r = next(state, b.dataset.ev); state = r.state;
-    const li = document.createElement('li'); li.textContent = r.log; log.prepend(li);
+    const li = document.createElement('li'); li.dataset.en = r.log; say(li); log.prepend(li);
     while (log.children.length > 6) log.lastChild.remove();
     show();
     const f = el.querySelector('button[data-ev]:not(:disabled)'); if (b.disabled && f) f.focus();
